@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pass and Leave Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='pass_leave.css')}}">
+</head>
+
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+    <div class="background-welcome">
+        
+
+        <div class="container-login">
+            <div class="login-card">
+                <h1 class="login-tag">Create an account</h1>
+                <form id="loginForm" action="/register" method="post">
+                    <div class="form-group">
+                        <label for="email">Official Email</label>
+                        <input type="email" autocomplete="email" id="email" name="email" placeholder="name@dsa.mil.ng">
+                        <div class="error" id="emailError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fname">First Name</label>
+                        <input type="fname" autocomplete="fname" id="fname" name="fname" placeholder="">
+                        <div class="error" id="fnameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="lname">Last Name</label>
+                        <input type="lname" autocomplete="lname" id="lname" name="lname" placeholder="">
+                        <div class="error" id="lnameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" autocomplete="category" name="category">
+                            <option value="" disabled selected>Select your Category</option>
+                            <option value="civilian">Civilian</option>
+                            <option value="personnel">Personnel</option>
+                        </select>
+                        <div class="error" id="categoryError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="staffid">Staff ID/Service Number</label>
+                        <input type="staffid" autocomplete="staffid" id="staffid" name="staffid"
+                            placeholder="DSA/CIV/...">
+                        <div class="error" id="staffidError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="directorate">Directorate</label>
+                        <select id="directorate" autocomplete="directorate" name="directorate">
+                            <option value="" disabled selected>Select your directorate</option>
+                            <option value="dcs">DCS</option>
+                            <option value="dnpt">DNPT</option>
+                            <option value="doa">DOA</option>
+                            <option value="deo">DEO</option>
+                            <option value="dcyber">DCYBER</option>
+                            <option value="dlog">DLOG</option>
+                        </select>
+                        <div class="error" id="emailError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input">
+                            <input type="password" autocomplete="current-password" id="password" name="password">
+                            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="error" id="passwordError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="con_password">Confirm Password</label>
+                        <div class="password-input">
+                            <input type="con_password" autocomplete="current-password" id="con_password"
+                                name="con_password">
+                            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                    </path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="error" id="conpasswordError"></div>
+                    </div>
+
+
+                    <button type="submit" value="submit" class="login-btn">Register</button>
+                </form>
+                <p class="signup-prompt">
+                    Already have an account? <a href="login" class="signup-link">Sign In</a>
+                </p>
+            </div>
+            <footer class="login-footer">
+                <p>© 2025 DCS Software Team</p>
+            </footer>
+        </div>
+    </div>
+</body>
+
+</html>

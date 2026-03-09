@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Detail - DSA Leave/Pass</title>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Keep all your existing CSS - no changes needed */
+        /* * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        } */
+
+        /* body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        } */
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .application-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+            }
+
+            100% {
+                transform: rotate(45deg) translateX(100%);
+            }
+        }
+
+        .header-logo {
+            background: white;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-logo img {
+            width: 80px;
+            height: auto;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ref-badge {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 12px 25px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .ref-badge i {
+            font-size: 20px;
+        }
+
+        .ref-badge span {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 40px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .section-title i {
+            font-size: 28px;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 10px;
+            border-radius: 12px;
+        }
+
+        .section-title h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-item {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .detail-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .detail-label i {
+            color: #667eea;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .detail-value.highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            gap: 6px;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-badge.issued {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 16px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #667eea;
+            z-index: 1;
+        }
+
+        .timeline-marker.completed {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .timeline-marker.rejected {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .timeline-content {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .timeline-role {
+            font-weight: 700;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .timeline-comment {
+            font-size: 14px;
+            color: #495057;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .attachments-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .attachment-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1 1 250px;
+            transition: all 0.3s ease;
+        }
+
+        .attachment-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            background: #e9ecef;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .attachment-info {
+            flex: 1;
+        }
+
+        .attachment-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .attachment-size {
+            font-size: 11px;
+            color: #6c757d;
+        }
+
+        .attachment-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 20px;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .attachment-link:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 20px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline::before {
+                left: 16px;
+            }
+
+            .timeline-item {
+                padding-left: 45px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .tacos-details {
+            background: #e8f4f8;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .tacos-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #17a2b8;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% include "sidebar.html" %}
+        <!-- Sidebar -->
+
+        <!-- Main Content -->
+        <div class="main-area">
+
+            {% include "base.html" %}
+            <!-- Header -->
+
+
+            <div class="container">
+                <div class="application-card">
+                    <!-- Header with Logo -->
+                    <div class="card-header">
+                        <div class="header-logo">
+                            <img src="{{ url_for('static', filename='images/dsa_logo.png') }}" alt="DSA Logo">
+                        </div>
+                        <h1 class="header-title">DEFENCE SPACE ADMINISTRATION</h1>
+                        <div class="header-subtitle">Leave/Pass Application Proforma • Civilian/Military</div>
+
+                        <!-- Reference ID Badge -->
+                        <div class="ref-badge">
+                            <i class="bi bi-upc-scan"></i>
+                            <span>{{ application.referenceId }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="card-body">
+                        <!-- Applicant Information Section -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="bi bi-person-badge"></i>
+                                <h2>Applicant Information</h2>
+                            </div>
+
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-hash"></i> Service Number</div>
+                                    <div class="detail-value highlight">{{ application.applicantId }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-person"></i> Full Name</div>
+                                    <div class="detail-value">{{ application.applicantName }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-building"></i> Directorate</div>
+                                    <div class="detail-value">{{ application.directorate }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-calendar-plus"></i> Date Applied</div>
+                                    <div class="detail-value">
+                                        {{ application.createdAt or 'Not specified' }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Leave Details Section -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="bi bi-calendar-check"></i>
+                                <h2>Leave Details</h2>
+                            </div>
+
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-tag"></i> Leave Type</div>
+                                    <div class="detail-value highlight">
+                                        {{ application.leave_type|capitalize }}
+                                        {% if application.leave_type == 'sick' and application.tacosDetails and
+                                        application.tacosDetails.hospitalized %}
+                                        <span class="tacos-badge">HOSPITALIZED</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-calendar"></i> Duration</div>
+                                    <div class="detail-value">{{ application.numberOfDays }} working days</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-calendar-range"></i> From - To</div>
+                                    <div class="detail-value">
+                                        {{ application.startDate or 'Not specified' }} →
+                                        {{ application.endDate or 'Not specified' }}
+                                    </div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-calendar-event"></i> Effective Date</div>
+                                    <div class="detail-value">
+                                        {{ application.effectiveDate or 'Not specified' }}
+                                    </div>
+                                </div>
+
+                                <div class="detail-item" style="grid-column: span 2;">
+                                    <div class="detail-label"><i class="bi bi-chat-text"></i> Reason</div>
+                                    <div class="detail-value">{{ application.reason }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-geo-alt"></i> Place of Travel</div>
+                                    <div class="detail-value">{{ application.placeIntended or 'Not specified' }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-house"></i> Contact Address</div>
+                                    <div class="detail-value">{{ application.contactAddress }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-telephone"></i> Telephone</div>
+                                    <div class="detail-value">{{ application.telephone or 'Not provided' }}</div>
+                                </div>
+
+                                <div class="detail-item">
+                                    <div class="detail-label"><i class="bi bi-person-workspace"></i> Reliever</div>
+                                    <div class="detail-value">{{ application.name_of_reliever or 'None' }}</div>
+                                </div>
+                            </div>
+
+                            <!-- TACOS Additional Details -->
+                            {% if application.tacosDetails %}
+                            <div class="tacos-details">
+                                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                    {% if application.tacosDetails.hasMedicalCertificate %}
+                                    <span><i class="bi bi-file-medical"></i> Medical Certificate Provided</span>
+                                    {% endif %}
+                                    {% if application.tacosDetails.hospitalized %}
+                                    <span><i class="bi bi-hospital"></i> Hospitalization</span>
+                                    {% endif %}
+                                    {% if application.tacosDetails.firstHospitalization %}
+                                    <span><i class="bi bi-flag"></i> First Hospitalization</span>
+                                    {% endif %}
+                                    {% if application.tacosDetails.attachmentMonths %}
+                                    <span><i class="bi bi-clock-history"></i> Attachment: {{
+                                        application.tacosDetails.attachmentMonths }} months</span>
+                                    {% endif %}
+                                    {% if application.tacosDetails.calendarDays %}
+                                    <span><i class="bi bi-calendar"></i> Calendar Days: {{
+                                        application.tacosDetails.calendarDays
+                                        }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Attachments Section -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="bi bi-paperclip"></i>
+                                <h2>Attachments ({{ application.attachments|length if application.attachments else 0 }})
+                                </h2>
+                            </div>
+
+                            {% if application.attachments and application.attachments|length > 0 %}
+                            <div class="attachments-list">
+                                {% for att in application.attachments %}
+                                <div class="attachment-item">
+                                    <div class="attachment-icon">
+                                        <i
+                                            class="bi bi-file-earmark-{{ att.contentType.split('/')[-1] if att.contentType else 'text' }}"></i>
+                                    </div>
+                                    <div class="attachment-info">
+                                        <div class="attachment-name">{{ att.filename }}</div>
+                                        <div class="attachment-size">{{ (att.size / 1024)|round(1) if att.size else 0 }}
+                                            KB
+                                        </div>
+                                    </div>
+                                    <a href="{{ url_for('approver_dashboard.serve_attachment', attachment_id=att.gridfs_id) }}"
+                                        class="attachment-link" target="_blank" title="View/Download">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p style="color: #6c757d; font-style: italic; text-align: center; padding: 20px;">
+                                <i class="bi bi-file-earmark-x"></i> No attachments uploaded
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Buttons Section with Approve/Reject -->
+                        <div class="section" style="background: linear-gradient(to right, #f8f9fa, #ffffff);">
+                            <div class="section-title">
+                                <i class="bi bi-shield-check"></i>
+                                <h2>Take Action</h2>
+                            </div>
+
+                            <div style="text-align: center; padding: 20px;">
+                                {% set current_user_role = user.roles[0] if user.roles else '' %}
+                                {% set is_pending = application.status == "pending" and application.finalApproval.status
+                                ==
+                                "pending" %}
+
+                                <!-- ==================== FIND USER IN CHAIN USING NAMESPACE ==================== -->
+                                {% set ns = namespace(user_step=None, user_index=-1, user_role=None) %}
+
+                                {% for step in application.approvalChain %}
+                                {% if step.get('approverId')|string == user.service_number|string %}
+                                {% set ns.user_step = step %}
+                                {% set ns.user_index = loop.index0 %}
+                                {% set ns.user_role = step.role %}
+                                {% endif %}
+                                {% endfor %}
+
+                                {% set user_step = ns.user_step %}
+                                {% set user_index = ns.user_index %}
+                                {% set user_role = ns.user_role %}
+
+                                <!-- ==================== CHECK IF IT'S USER'S TURN (FOR NON-CHIEF CLERK) ==================== -->
+                                {% set is_users_turn = false %}
+                                {% if user_step and user_step.status == "pending" and user_index >= 0 and 'Chief Clerk'
+                                not
+                                in
+                                user.roles and 'SO1-DOA' not in user.roles %}
+                                {% set all_previous_approved = true %}
+                                {% for step in application.approvalChain %}
+                                {% if loop.index0 < user_index and step.status !="approved" %} {% set
+                                    all_previous_approved=false %} {% endif %} {% endfor %} {% if all_previous_approved
+                                    %} {% set is_users_turn=true %} {% endif %} {% endif %}
+                                    <!--====================CHECK IF CHIEF CLERK CAN FORWARD====================-->
+                                    {% set can_forward = false %}
+                                    {% if 'Chief Clerk' in user.roles and user_step and user_step.status == "pending"
+                                    and
+                                    user_step.forward_status == "not_forwarded" %}
+                                    {% set all_previous_approved = true %}
+                                    {% for step in application.approvalChain %}
+                                    {% if step.role != "Chief Clerk" and step.status != "approved" %}
+                                    {% set all_previous_approved = false %}
+                                    {% endif %}
+                                    {% endfor %}
+
+                                    {% if all_previous_approved %}
+                                    {% set can_forward = true %}
+                                    {% endif %}
+                                    {% endif %}
+
+                                    <!-- ==================== CHECK IF SO1-DOA CAN ACT ==================== -->
+                                    {% set so1_doa_can_act = false %}
+                                    {% if 'SO1-DOA' in user.roles and is_pending %}
+                                    {% set chief_clerk_step = application.approvalChain|selectattr('role', 'equalto',
+                                    'Chief
+                                    Clerk')|first %}
+                                    {% if chief_clerk_step and chief_clerk_step.forward_status == "forwarded" %}
+                                    {% set all_previous_approved = true %}
+                                    {% for step in application.approvalChain %}
+                                    {% if step.role != "Chief Clerk" and step.status != "approved" %}
+                                    {% set all_previous_approved = false %}
+                                    {% endif %}
+                                    {% endfor %}
+
+                                    {% if all_previous_approved %}
+                                    {% set so1_doa_can_act = true %}
+                                    {% endif %}
+                                    {% endif %}
+                                    {% endif %}
+
+                                    <!-- ==================== CHIEF CLERK ACTIONS ==================== -->
+                                    {% if 'Chief Clerk' in user.roles %}
+                                    {% if is_pending and can_forward %}
+                                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                                        <button class="btn btn-forward"
+                                            data-url="{{ url_for('approver_dashboard.forward', app_id=application._id|string) }}"
+                                            onclick="openForwardModal(this)">
+                                            <i class="bi bi-send"></i> Forward to SO1-DOA
+                                        </button>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- ==================== SO1-DOA ACTIONS ==================== -->
+                                    {% elif 'SO1-DOA' in user.roles %}
+
+                                    {% if is_pending
+                                    and application.finalApproval.approverId|string == user.service_number|string
+                                    and application.finalApproval.status == "pending" %}
+                                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                                        <button class="btn btn-approve"
+                                            data-url="{{ url_for('approver_dashboard.final_approve', app_id=application._id|string) }}"
+                                            onclick="openFinalApproveModal(this)">
+                                            <i class="bi bi-check-circle"></i> Final Approve
+                                        </button>
+
+                                        <button class="btn btn-reject"
+                                            data-url="{{ url_for('approver_dashboard.final_reject', app_id=application._id|string) }}"
+                                            onclick="openFinalRejectModal(this)">
+                                            <i class="bi bi-x-circle"></i> Final Reject
+                                        </button>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- ==================== OTHER APPROVERS ==================== -->
+                                    {% else %}
+                                    {% if is_pending and is_users_turn %}
+                                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                                        <button class="btn btn-approve"
+                                            data-url="{{ url_for('approver_dashboard.approve', app_id=application._id|string) }}"
+                                            onclick="openApproveModal(this)">
+                                            <i class="bi bi-check-circle"></i> Approve
+                                        </button>
+
+                                        <button class="btn btn-reject"
+                                            data-url="{{ url_for('approver_dashboard.reject', app_id=application._id|string) }}"
+                                            onclick="openRejectModal(this)">
+                                            <i class="bi bi-x-circle"></i> Reject
+                                        </button>
+                                    </div>
+                                    {% endif %}
+                                    {% endif %}
+
+                                    <!-- ==================== DOWNLOAD RECEIPT ==================== -->
+                                    {% if application.status == "issued" and application.finalApproval.status ==
+                                    "approved"
+                                    %}
+                                    <div
+                                        style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+                                        <a href="{{ url_for('approver_dashboard.download_receipt', app_id=application._id|string) }}"
+                                            class="btn btn-download">
+                                            <i class="bi bi-download"></i> Download Receipt
+                                        </a>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- ==================== NO ACTIONS MESSAGE ==================== -->
+                                    {% if not (is_users_turn or can_forward or so1_doa_can_act or
+                                    application.finalApproval.approverId|string == user.service_number|string or
+                                    application.status == "issued") %}
+                                    <div
+                                        style="padding: 20px; background: #f8f9fa; border-radius: 10px; color: #6c757d;">
+                                        <i class="bi bi-info-circle"
+                                            style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                                        <p>No actions available at this time.</p>
+                                        {% if user_step %}
+                                        {% if user_step.status != "pending" %}
+                                        <small>You have already <strong>{{ user_step.status }}</strong> this
+                                            application.</small>
+                                        {% else %}
+                                        <small>Waiting for previous approvers to complete their steps.</small>
+                                        {% endif %}
+                                        {% else %}
+                                        <small>You are not in the approval chain for this application.</small>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                            </div>
+                        </div>
+
+
+                        <!-- Approval Chain Timeline -->
+                        <div class="section">
+                            <div class="section-title">
+                                <i class="bi bi-diagram-3"></i>
+                                <h2>Approval Chain Progress</h2>
+                            </div>
+
+                            <div class="timeline">
+                                {% for step in application.approvalChain %}
+                                <div class="timeline-item">
+                                    <div class="timeline-marker 
+                                {% if step.status == 'approved' %}completed
+                                {% elif step.status == 'rejected' %}rejected
+                                {% endif %}">
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <div>
+                                                <span class="timeline-role">{{ step.role }}</span>
+                                                {% if step.role == "Chief Clerk" and step.forward_status %}
+                                                <span
+                                                    class="status-badge {% if step.forward_status == 'forwarded' %}approved{% else %}pending{% endif %}"
+                                                    style="margin-left: 10px;">
+                                                    <i class="bi bi-arrow-right-circle"></i>
+                                                    {{ step.forward_status|upper }}
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                            {% if step.timestamp %}
+                                            <span class="timeline-date">
+                                                {{ step.timestamp }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div style="margin-bottom: 10px;">
+                                            <span class="status-badge {{ step.status }}">
+                                                <i class="bi 
+                                            {% if step.status == 'approved' %}bi-check-circle
+                                            {% elif step.status == 'rejected' %}bi-x-circle
+                                            {% else %}bi-clock{% endif %}">
+                                                </i>
+                                                {{ step.status|upper }}
+                                            </span>
+                                        </div>
+
+                                        {% if step.comments %}
+                                        <div class="timeline-comment">
+                                            <i class="bi bi-chat-quote" style="color: #667eea; margin-right: 8px;"></i>
+                                            "{{ step.comments }}"
+                                        </div>
+                                        {% endif %}
+
+                                        {% if step.approverName %}
+                                        <div style="font-size: 12px; color: #6c757d; margin-top: 10px;">
+                                            <i class="bi bi-person-check"></i> {{ step.approverName }}
+                                            ({{ step.approverRank or '' }})
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+
+                                <!-- Final Approval Step (SO1-DOA) -->
+                                <div class="timeline-item">
+                                    <div class="timeline-marker 
+                                {% if application.finalApproval.status == 'approved' %}completed
+                                {% elif application.finalApproval.status == 'rejected' %}rejected
+                                {% endif %}">
+                                    </div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <span class="timeline-role">SO1-DOA (Final Approval)</span>
+                                            {% if application.finalApproval.timestamp %}
+                                            <span class="timeline-date">
+                                                {{ application.finalApproval.timestamp }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div style="margin-bottom: 10px;">
+                                            <span class="status-badge {{ application.finalApproval.status }}">
+                                                <i class="bi 
+                                            {% if application.finalApproval.status == 'approved' %}bi-check-circle
+                                            {% elif application.finalApproval.status == 'rejected' %}bi-x-circle
+                                            {% else %}bi-clock{% endif %}">
+                                                </i>
+                                                {{ application.finalApproval.status|upper }}
+                                            </span>
+                                        </div>
+
+                                        {% if application.finalApproval.comments %}
+                                        <div class="timeline-comment">
+                                            <i class="bi bi-chat-quote" style="color: #667eea; margin-right: 8px;"></i>
+                                            "{{ application.finalApproval.comments }}"
+                                        </div>
+                                        {% endif %}
+
+                                        {% if application.finalApproval.receipt and
+                                        application.finalApproval.receipt.receiptNumber %}
+                                        <div
+                                            style="margin-top: 10px; padding: 10px; background: #e8f4f8; border-radius: 8px;">
+                                            <i class="bi bi-receipt"></i>
+                                            <strong>Receipt:</strong> {{ application.finalApproval.receipt.receiptNumber
+                                            }}
+                                            <br>
+                                            <small>Issued: {{ application.finalApproval.receipt.issuedDate if
+                                                application.finalApproval.receipt.issuedDate else '' }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                        <!-- Original action buttons (keep as is) -->
+                        <div class="action-buttons">
+                            <a href="{{ url_for('approver_dashboard.dashboard_main') }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Dashboard
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Reject Confirmation Modal -->
+            <div id="rejectModal" class="modal-overlay">
+                <div class="modal-box">
+
+                    <h3>Reject Application</h3><br>
+                    <p class="subtitle">Confirm your Rejection for this Leave/Pass request</p><br><br>
+
+                    <form id="rejectForm" method="POST">
+                        <div class="form-group">
+                            <label for="comments">Comments (required for rejection)</label>
+                            <input type="text" autocomplete="off" id="comments" name="comments" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="Comments">Name/Signature</label>
+                            <input type="text" autocomplete="off" value="{{ user.fullName }}" id="signature_name"
+                                name="signature_name" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="Comments">Role</label>
+                            <input type="text" autocomplete="off" value="{{ user.roles[0] or '' }}" id="rank"
+                                name="rank" placeholder="">
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="cancel-btn" onclick="closeRejectModal()">Cancel</button>
+                            <button type="submit" class="continues-btn">Confirm Rejection</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+
+            <!-- Approval Confirmation Modal -->
+            <div id="approveModal" class="modal-overlay">
+                <div class="modal-box">
+
+                    <h3>Approve Application</h3><br>
+                    <p class="subtitle">Confirm your approval for this leave/pass request</p><br><br>
+
+                    <form id="approveForm" method="POST">
+                        <div class="form-group">
+                            <label for="comments">Comments</label>
+                            <input type="text" autocomplete="off" id="comments" name="comments" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="Comments">Name/Signature</label>
+                            <input type="text" autocomplete="off" value="{{ user.fullName }}" id="signature_name"
+                                name="signature_name" placeholder="">
+                        </div>
+                        <div class="form-group">
+                            <label for="Comments">Role</label>
+                            <input type="text" autocomplete="off" value="{{ user.roles[0] or '' }}" id="rank"
+                                name="rank" placeholder="">
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="cancel-btn" onclick="closeApproveModal()">Cancel</button>
+                            <button type="submit" class="continuess-btn">Confirm Approval</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+
+            <!-- Forward Confirmation Modal (for Chief Clerk) -->
+            <div id="forwardModal" class="modal-overlay">
+                <div class="modal-box">
+
+                    <h3>Forward Application</h3><br>
+                    <p class="subtitle">Confirm forwarding this application to SO1-DOA for final approval</p>
+                    <br><br>
+
+                    <form id="forwardForm" method="POST">
+                        <div class="form-group">
+                            <label for="forward_comments">Comments (optional)</label>
+                            <input type="text" id="forward_comments" name="comments"
+                                placeholder="Any remarks before forwarding...">
+                        </div>
+                        <div class="form-group">
+                            <label for="forward_signature">Name/Signature</label>
+                            <input type="text" id="forward_signature" name="signature_name" value="{{ user.fullName }}"
+                                readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="forward_rank">Rank / Grade</label>
+                            <input type="text" id="forward_rank" name="rank" value="{{ user.rankOrGrade or '' }}"
+                                readonly>
+                        </div>
+                    </form>
+
+                    <div class="modal-actions">
+                        <button type="button" class="cancel-btn" onclick="closeForwardModal()">Cancel</button>
+                        <button type="submit" class="continuess-btn" onclick="confirmForward()">Confirm
+                            Forward</button>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- Final Approve Modal (SO1-DOA) -->
+            <div id="finalApproveModal" class="modal-overlay">
+                <div class="modal-box">
+                    <h3>Final Approval</h3><br>
+                    <p class="subtitle">Confirm final approval and receipt issuance</p><br><br>
+
+                    <form id="finalApproveForm" method="POST">
+                        <div class="form-group">
+                            <label for="final_comments">Comments (optional)</label>
+                            <input id="final_comments" name="comments" placeholder="Final remarks...">
+                        </div>
+                        <div class="form-group">
+                            <label for="final_signature">Name/Signature</label>
+                            <input type="text" id="final_signature" name="signature_name" value="{{ user.fullName }}"
+                                readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="final_rank">Rank / Grade</label>
+                            <input type="text" id="final_rank" name="rank" value="{{ user.rankOrGrade or '' }}"
+                                readonly>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="cancel-btn" onclick="closeFinalApproveModal()">Cancel</button>
+                            <button type="submit" class="continuess-btn">Confirm Final Approval</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Final Reject Modal (SO1-DOA) -->
+            <div id="finalRejectModal" class="modal-overlay">
+                <div class="modal-box">
+                    <h3>Final Rejection</h3><br>
+                    <p class="subtitle">Confirm final rejection of this application</p><br><br>
+
+                    <form id="finalRejectForm" method="POST">
+                        <div class="form-group">
+                            <label for="final_reject_comments">Comments (required)</label>
+                            <input type="text" id="final_reject_comments" name="comments" required
+                                placeholder="Reason for final rejection...">
+                        </div>
+                        <div class="form-group">
+                            <label for="final_reject_signature">Name/Signature</label>
+                            <input type="text" id="final_reject_signature" name="signature_name"
+                                value="{{ user.fullName }}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="final_reject_rank">Rank / Grade</label>
+                            <input type="text" id="final_reject_rank" name="rank" value="{{ user.rankOrGrade or '' }}"
+                                readonly>
+                        </div>
+                        <div class="modal-actions">
+                            <button type="button" class="cancel-btn" onclick="closeFinalRejectModal()">Cancel</button>
+                            <button type="submit" class="continues-btn">Confirm Final Rejection</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // REJECT CONFIRMATION MODAL JS
+        let rejectUrl = null;
+
+        function openRejectModal(element) {
+            rejectUrl = element.getAttribute("data-url");
+            const form = document.getElementById("rejectForm");      // ← now exists
+            if (form) {
+                form.action = rejectUrl;
+                document.getElementById("rejectModal").style.display = "flex";
+            } else {
+                console.error("Reject form not found!");
+            }
+        }
+
+
+        function closeRejectModal() {
+            const modal = document.getElementById("rejectModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+
+            const form = document.getElementById("rejectForm");
+            if (form) {
+                form.action = "";
+                form.reset(); // Clear form fields
+            }
+        }
+
+        // Optional: Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById("rejectModal");
+            if (event.target === modal) {
+                closeRejectModal();
+            }
+        }
+
+
+        // APPROVE CONFIRMATION MODAL JS
+        let approveUrl = null;
+
+        function openApproveModal(element) {
+            approveUrl = element.getAttribute("data-url");
+            const form = document.getElementById("approveForm");  // ← use correct ID
+            if (form) {
+                form.action = approveUrl;
+                document.getElementById("approveModal").style.display = "flex";
+            } else {
+                console.error("Approve form not found!");
+            }
+        }
+
+        function closeApproveModal() {
+            const modal = document.getElementById("approveModal");
+            if (modal) {
+                modal.style.display = "none";
+            }
+
+            const form = document.getElementById("approveForm");
+            if (form) {
+                form.action = "";
+                form.reset(); // Clear form fields
+            }
+        }
+
+
+        // Optional: Close modal when clicking outside
+        window.onclick = function (event) {
+            const modal = document.getElementById("approveModal");
+            if (event.target === modal) {
+                closeApproveModal();
+            }
+        }
+
+        // FORWARD MODAL (Chief Clerk only)
+        let forwardUrl = null;
+
+        function openForwardModal(element) {
+            forwardUrl = element.getAttribute("data-url");
+            const form = document.getElementById("forwardForm");
+            if (form) {
+                form.action = forwardUrl;
+                document.getElementById("forwardModal").style.display = "flex";
+            } else {
+                console.error("Forward form not found!");
+            }
+        }
+
+        function closeForwardModal() {
+            document.getElementById("forwardModal").style.display = "none";
+            const form = document.getElementById("forwardForm");
+            if (form) form.action = "";
+        }
+
+        function confirmForward() {
+            const form = document.getElementById("forwardForm");
+            if (form && form.action) {
+                form.submit();  // Sends POST to forward route
+            }
+        }
+
+        // FINAL APPROVE (SO1-DOA)
+        let finalApproveUrl = null;
+
+        function openFinalApproveModal(element) {
+            finalApproveUrl = element.getAttribute("data-url");
+            const form = document.getElementById("finalApproveForm");
+            if (form) {
+                form.action = finalApproveUrl;
+                document.getElementById("finalApproveModal").style.display = "flex";
+            }
+        }
+
+        function closeFinalApproveModal() {
+            document.getElementById("finalApproveModal").style.display = "none";
+            const form = document.getElementById("finalApproveForm");
+            if (form) form.action = "";
+        }
+
+        function confirmFinalApprove() {
+            const form = document.getElementById("finalApproveForm");
+            if (form && form.action) {
+                form.submit();
+            }
+        }
+
+        // FINAL REJECT (SO1-DOA)
+        let finalRejectUrl = null;
+
+        function openFinalRejectModal(element) {
+            finalRejectUrl = element.getAttribute("data-url");
+            const form = document.getElementById("finalRejectForm");
+            if (form) {
+                form.action = finalRejectUrl;
+                document.getElementById("finalRejectModal").style.display = "flex";
+            }
+        }
+
+        function closeFinalRejectModal() {
+            document.getElementById("finalRejectModal").style.display = "none";
+            const form = document.getElementById("finalRejectForm");
+            if (form) form.action = "";
+        }
+
+        function confirmFinalReject() {
+            const form = document.getElementById("finalRejectForm");
+            if (form && form.action) {
+                form.submit();
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parade State - {{ today }}
+        {% if on_batch == "ALL" %}
+        (All Staff - Friday)
+        {% else %}
+        (Batch {{ on_batch }} ON)
+        {% endif %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/2.5.0/remixicon.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+
+    <style>
+        /* NEW STYLES FOR TWO-COLUMN LAYOUT */
+        .application-container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .content-form {
+            flex: 2;
+            min-width: 500px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+        }
+
+        .parade_info {
+            flex: 1;
+            min-width: 600px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            max-height: calc(100vh - 100px);
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            justify-self: center;
+        }
+
+        input {
+            margin-bottom: 10px;
+        }
+
+        /*  */
+
+        label {
+            font-weight: 800;
+        }
+
+
+        @media (max-width: 992px) {
+            .application-container {
+                flex-direction: column;
+            }
+
+            .parade_info {
+                max-height: none;
+                position: static;
+            }
+        }
+
+        .multi-select {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .select-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: rgb(235, 235, 235);
+            cursor: pointer;
+            border-radius: 6px;
+            text-align: center
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            width: 100%;
+            z-index: 1000;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .dropdown-content label {
+            display: flex;
+            margin-bottom: 10px;
+            cursor: pointer;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+        }
+
+        .absent-row {
+            background-color: #ffcccc !important;
+        }
+
+        .course-row {
+            background-color: #fff3cd !important;
+        }
+
+        .hospital-row {
+            background-color: #cce5ff !important;
+        }
+
+        .awol-row {
+            background-color: #f8d7da !important;
+        }
+
+        .excuse-row {
+            background-color: #e2e3e5 !important;
+        }
+
+        .study-row {
+            background-color: #d1ecf1 !important;
+        }
+
+        .cds-row {
+            background-color: #d4edda !important;
+        }
+    </style>
+</head>
+
+<body>
+
+
+
+    <div class="dashboard-wrapper">
+
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% include "sidebar.html" %}
+        <!-- Sidebar -->
+
+        <!-- Main Content -->
+        <div class="main-area">
+
+            {% include "base.html" %}
+            <div class="content-boxes">
+
+                <div class="application-container">
+
+                    <div class="parade_info">
+                        <!-- Documents Table -->
+                        <div class="documents-table-container">
+                            <div class="table-container">
+                                <div class="table-header">
+                                    Parade State - {{ today }}
+                                    {% if on_batch == "ALL" %}
+                                    (All Staff - Friday)
+                                    {% else %}
+                                    (Batch {{ on_batch }} ON)
+                                    {% endif %}
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="documents-table">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" class="checkbox-all" /></th>
+                                                <th>Staff Name</th>
+                                                <th>Status</th>
+                                                <th>Sick</th>
+                                                <th>Pass</th>
+                                                <th>Leave</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="documents-table-body">
+                                            {% if staff_list %}
+                                            {% for staff in staff_list %}
+                                            <tr data-id="{{ staff.service_number }}">
+                                                <td><input type="checkbox" class="checkbox-row" /></td>
+                                                <td>{{ staff.fullName }}</td>
+                                                <td class="status-cell">{{ staff.status }}</td>
+                                                <td class="sick-col"></td>
+                                                <td class="pass-col"></td>
+                                                <td class="leave-col"></td>
+                                            </tr>
+                                            {% endfor %}
+                                            {% else %}
+                                            <tr>
+                                                <td colspan="14" style="text-align:center;">No staff found</td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                    <div class="no-data">
+                                        <p></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="content-form">
+                        <form method="POST" id="paradeForm">
+
+                            {% if edit_mode %}
+                            <input type="hidden" name="parade_id" value="{{ parade._id }}">
+                            <div class="edit-badge"
+                                style="background-color: #ffc107; color: #000; padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center; font-weight: bold;">
+                                <i class="ri-edit-line"></i> EDITING PARADE STATE FOR {{ today }} (Batch {{ on_batch }})
+                            </div>
+                            {% endif %}
+
+                            <div class="parade-summary">
+
+                                <label>Strength</label>
+                                <input type="number" id="strength" value="{{ strength }}" readonly>
+
+                                <label>On Parade (Auto)</label>
+                                <input type="number" id="on_parade"
+                                    value="{{ parade.on_parade if parade and parade.on_parade else 0 }}" readonly>
+
+                                <label>Sick</label>
+                                <input type="number" id="sick" value="{{ sick }}" readonly
+                                    class="{% if edit_mode %}readonly-field{% endif %}">
+
+                                <label>Leave</label>
+                                <input type="number" id="leave" value="{{ leave }}" readonly
+                                    class="{% if edit_mode %}readonly-field{% endif %}">
+
+                                <label>Pass</label>
+                                <input type="number" id="pass" value="{{ pass_count }}" readonly
+                                    class="{% if edit_mode %}readonly-field{% endif %}">
+
+                                <hr>
+
+                                <label>Hospital Admission</label>
+                                <input type="number" name="hospital" value="{{ hospital|default(0) }}"
+                                    id="hospital_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="toggleDropdown('hospitalDropdown')">
+                                        Select Staff ({{ staff_on_hospital_admin|length }} selected)
+                                    </div>
+
+                                    <div id="hospitalDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input class="chrtt" type="checkbox" name="staff_on_hospital_admin"
+                                                value="{{ s.service_number }}" {% if s.service_number in
+                                                staff_on_hospital_admin %}checked{% endif %}
+                                                onchange="updateCount('staff_on_hospital_admin', 'hospital')">
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>Course</label>
+                                <input type="number" name="course" value="{{ course|default(0) }}" id="course_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="courseToggleDropdown('courseDropdown')">
+                                        Select Staff ({{ staff_on_course|length }} selected)
+                                    </div>
+
+                                    <div id="courseDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input class="chrtt" type="checkbox" name="staff_on_course"
+                                                value="{{ s.service_number }}" {% if s.service_number in staff_on_course
+                                                %}checked{% endif %}
+                                                onchange="updateCount('staff_on_course', 'course')">
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>Absent</label>
+                                <input type="number" name="absent" value="{{ absent|default(0) }}" id="absent_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="absentToggleDropdown('absentDropdown')">
+                                        Select Staff ({{ staff_on_absent|length }} selected)
+                                    </div>
+
+                                    <div id="absentDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input type="checkbox" name="staff_absent" value="{{ s.service_number }}"
+                                                onchange="updateCount('staff_absent', 'absent')" {% if s.service_number
+                                                in staff_on_absent %}checked{% endif %}>
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>AWOL</label>
+                                <input type="number" name="awol" value="{{ awol|default(0) }}" id="awol_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="awolToggleDropdown('awolDropdown')">
+                                        Select Staff ({{ staff_on_awol|length }} selected)
+                                    </div>
+
+                                    <div id="awolDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input type="checkbox" name="staff_on_awol" value="{{ s.service_number }}"
+                                                onchange="updateCount('staff_on_awol', 'awol')" {% if s.service_number
+                                                in staff_on_awol %}checked{% endif %}>
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>Excuse Duty</label>
+                                <input type="number" name="excuse_duty" value="{{ excuse_duty|default(0) }}"
+                                    id="excuse_duty_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="excuseDutyToggleDropdown('excuseDutyDropdown')">
+                                        Select Staff ({{ staff_on_excuse_duty|length }} selected)
+                                    </div>
+
+                                    <div id="excuseDutyDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input type="checkbox" name="staff_on_excuse_duty"
+                                                value="{{ s.service_number }}"
+                                                onchange="updateCount('staff_on_excuse_duty', 'excuse_duty')" {% if
+                                                s.service_number in staff_on_excuse_duty %}checked{% endif %}>
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>Study Leave</label>
+                                <input type="number" name="study_leave" value="{{ study_leave|default(0) }}"
+                                    id="study_leave_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="studyLeaveToggleDropdown('studyLeaveDropdown')">
+                                        Select Staff ({{ staff_on_study_leave|length }} selected)
+                                    </div>
+
+                                    <div id="studyLeaveDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input type="checkbox" name="staff_on_study_leave"
+                                                value="{{ s.service_number }}"
+                                                onchange="updateCount('staff_on_study_leave', 'study_leave')" {% if
+                                                s.service_number in staff_on_study_leave %}checked{% endif %}>
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>CDS</label>
+                                <input type="number" name="cds" value="{{ cds|default(0) }}" id="cds_input">
+                                <div class="multi-select">
+                                    <div class="select-box" onclick="cdsToggleDropdown('cdsDropdown')">
+                                        Select Staff ({{ staff_on_cds|length }} selected)
+                                    </div>
+
+                                    <div id="cdsDropdown" class="dropdown-content">
+                                        {% for s in staff_list %}
+                                        <label>
+                                            <input type="checkbox" name="staff_on_cds" value="{{ s.service_number }}"
+                                                onchange="updateCount('staff_on_cds', 'cds')" {% if s.service_number in
+                                                staff_on_cds %}checked{% endif %}>
+                                            {{ s.fullName }} ({{ s.service_number }})
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <label>Remark</label>
+                                <input type="text" name="remark"
+                                    value="{{ parade.remark if parade and parade.remark else '' }}" id="remark_input"
+                                    placeholder="Any additional info or notes..." style="width: 100%;">
+
+                            </div>
+
+                            <div style="display: flex; gap: 10px; justify-content: center;">
+                                <button type="button" onclick="openConfirmModal()" class="btn btn-primary">
+
+                                    {% if edit_mode %}
+                                    <i class="ri-save-line"></i> Update Parade State
+                                    {% else %}
+                                    Save Parade State
+                                    {% endif %}
+
+                                </button>
+                                {% if edit_mode %}
+                                <a href="{{ url_for('parade_state.view_parade_state', parade_id=parade._id) }}"
+                                    class="btn btn-secondary">
+                                    Cancel
+                                </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CONFIRM MODAL -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header" style="justify-content: center; border-bottom: none;">
+                    <h5 class="modal-title" style="font-weight: bold; color: green;">
+                        {% if edit_mode %}Confirm Update{% else %}Confirm Submission{% endif %}
+                    </h5>
+                </div>
+
+                <div class="modal-body" style="text-align: center; font-size: 1.1rem;">
+                    {% if edit_mode %}
+                    Are you sure you want to update this parade state for {{ today }}?
+                    {% else %}
+                    Are you sure you want to submit today's parade state?
+                    {% endif %}
+                </div>
+
+                <div class="modal-footer" style="justify-content: center; border-top: none;">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirmSubmitBtn"
+                        class="btn {% if edit_mode %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if edit_mode %}Yes, Update{% else %}Yes, Submit{% endif %}
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        function openConfirmModal() {
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            modal.show();
+        }
+
+        document.getElementById("confirmSubmitBtn").addEventListener("click", function () {
+            document.getElementById("paradeForm").submit();
+        });
+
+        function updateCount(checkboxName, inputName) {
+            const checked = document.querySelectorAll(`input[name="${checkboxName}"]:checked`);
+            document.querySelector(`input[name="${inputName}"]`).value = checked.length;
+        }
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            function updateTableHighlight(checkboxName, rowClass, labelText) {
+                const checkboxes = document.querySelectorAll(`input[name="${checkboxName}"]`);
+
+                // Initialize existing checked boxes
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        const staffId = cb.value;
+                        const row = document.querySelector(`tr[data-id="${staffId}"]`);
+                        if (row) {
+                            row.classList.add(rowClass);
+                            const statusCell = row.querySelector('.status-cell');
+                            if (statusCell) statusCell.innerHTML = `<strong>${labelText}</strong>`;
+                        }
+                    }
+
+                });
+
+
+                    checkboxes.forEach(cb => {
+                    cb.addEventListener('change', function () {
+                        const staffId = this.value;
+                        const row = document.querySelector(`tr[data-id="${staffId}"]`);
+
+                        if (!row) return;
+
+                        const statusCell = row.querySelector('.status-cell');
+
+                        if (this.checked) {
+                            row.classList.add(rowClass);
+                            if (statusCell) statusCell.innerHTML = `<strong>${labelText}</strong>`;
+                        } else {
+                            row.classList.remove(rowClass);
+                            if (statusCell) statusCell.innerHTML = "";
+                        }
+                    });
+                });
+            }
+
+            updateTableHighlight("staff_absent", "absent-row", "ABSENT");
+            updateTableHighlight("staff_on_course", "course-row", "COURSE");
+            updateTableHighlight("staff_on_hospital_admin", "hospital-row", "HOSPITAL");
+            updateTableHighlight("staff_on_awol", "awol-row", "AWOL");
+            updateTableHighlight("staff_on_excuse_duty", "excuse-row", "EXCUSE");
+            updateTableHighlight("staff_on_study_leave", "study-row", "STUDY");
+            updateTableHighlight("staff_on_cds", "cds-row", "CDS");
+
+        });
+
+        function toggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function courseToggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+        function absentToggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function awolToggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+        function excuseDutyToggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+        function studyLeaveToggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+        function cdsToggleDropdown(id) {
+            const el = document.getElementById(id);
+
+            // Close others
+            document.querySelectorAll('.dropdown-content').forEach(d => {
+                if (d.id !== id) d.style.display = 'none';
+            });
+
+            // Toggle current
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.multi-select')) {
+                document.querySelectorAll('.dropdown-content').forEach(d => {
+                    d.style.display = 'none';
+                });
+            }
+        });
+
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const statusMap = {
+                "staff_absent": { class: "absent-row", label: "ABSENT" },
+                "staff_on_course": { class: "course-row", label: "COURSE" },
+                "staff_on_hospital_admin": { class: "hospital-row", label: "HOSPITAL" },
+                "staff_on_awol": { class: "awol-row", label: "AWOL" },
+                "staff_on_excuse_duty": { class: "excuse-row", label: "EXCUSE" },
+                "staff_on_study_leave": { class: "study-row", label: "STUDY" },
+                "staff_on_cds": { class: "cds-row", label: "CDS" }
+            };
+
+            const allStatusClasses = Object.values(statusMap).map(s => s.class);
+
+            // =============================================
+            // INITIALIZATION FOR EDIT MODE
+            // =============================================
+
+            // First, clear any existing status classes from all rows
+            document.querySelectorAll('tr[data-id]').forEach(row => {
+                row.classList.remove(...allStatusClasses);
+                const statusCell = row.querySelector('.status-cell');
+                if (statusCell) statusCell.innerHTML = '';
+            });
+
+            // Then, loop through each category and apply highlighting for checked boxes
+            Object.keys(statusMap).forEach(name => {
+                const config = statusMap[name];
+                document.querySelectorAll(`input[name="${name}"]:checked`).forEach(cb => {
+                    const serviceNumber = cb.value;
+                    const row = document.querySelector(`tr[data-id="${serviceNumber}"]`);
+                    if (row) {
+                        row.classList.add(config.class);
+                        const statusCell = row.querySelector('.status-cell');
+                        if (statusCell) {
+                            statusCell.innerHTML = `<strong>${config.label}</strong>`;
+                        }
+                    }
+                });
+            });
+
+            // Initialize the single selection enforcement for pre-checked boxes
+            document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+                const serviceNumber = cb.value;
+                const currentName = cb.name;
+
+                // Disable all other checkboxes for this staff
+                document.querySelectorAll(`input[type="checkbox"][value="${serviceNumber}"]`).forEach(otherCb => {
+                    if (otherCb.name !== currentName) {
+                        otherCb.disabled = true;
+                    }
+                });
+            });
+
+            // =============================================
+            // EXISTING FUNCTIONS (unchanged)
+            // =============================================
+
+            function enforceSingleSelection(serviceNumber, currentName) {
+                const allCheckboxes = document.querySelectorAll(`input[type="checkbox"][value="${serviceNumber}"]`);
+
+                allCheckboxes.forEach(cb => {
+                    if (cb.name !== currentName) {
+                        cb.checked = false;
+                        cb.disabled = true;   // 🔥 DISABLE others
+                    } else {
+                        cb.disabled = false;
+                    }
+                });
+            }
+
+            function resetIfUnchecked(serviceNumber) {
+                const allCheckboxes = document.querySelectorAll(`input[type="checkbox"][value="${serviceNumber}"]`);
+
+                const anyChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+
+                if (!anyChecked) {
+                    allCheckboxes.forEach(cb => cb.disabled = false); // 🔥 RE-ENABLE
+                }
+            }
+
+            function updateRow(serviceNumber, rowClass, labelText) {
+                const row = document.querySelector(`tr[data-id="${serviceNumber}"]`);
+                if (!row) return;
+
+                const statusCell = row.querySelector('.status-cell');
+
+                // Remove all previous status styles
+                row.classList.remove(...allStatusClasses);
+
+                // Apply new one
+                row.classList.add(rowClass);
+
+                if (statusCell) {
+                    statusCell.innerHTML = `<strong>${labelText}</strong>`;
+                }
+            }
+
+            function clearRow(serviceNumber) {
+                const row = document.querySelector(`tr[data-id="${serviceNumber}"]`);
+                if (!row) return;
+
+                const statusCell = row.querySelector('.status-cell');
+
+                row.classList.remove(...allStatusClasses);
+
+                if (statusCell) {
+                    statusCell.innerHTML = "";
+                }
+            }
+
+            // Attach event listeners
+            Object.keys(statusMap).forEach(name => {
+                const config = statusMap[name];
+
+                document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+
+                    cb.addEventListener("change", function () {
+                        const serviceNumber = this.value;
+
+                        if (this.checked) {
+                            // remove from all other categories
+                            // clearOtherSelections(serviceNumber, name);
+                            enforceSingleSelection(serviceNumber, name);
+
+                            // update UI
+                            updateRow(serviceNumber, config.class, config.label);
+                        } else {
+                            resetIfUnchecked(serviceNumber);
+                            clearRow(serviceNumber);
+                        }
+
+                        updateCounts();
+                    });
+
+                });
+            });
+
+        });
+
+
+        // Initialize all counts on page load
+        document.addEventListener("DOMContentLoaded", function () {
+            updateCounts();
+        });
+        
+        function updateCounts() {
+            const fields = {
+                staff_absent: "absent",
+                staff_on_course: "course",
+                staff_on_hospital_admin: "hospital",
+                staff_on_awol: "awol",
+                staff_on_excuse_duty: "excuse_duty",
+                staff_on_study_leave: "study_leave",
+                staff_on_cds: "cds"
+            };
+
+            Object.keys(fields).forEach(name => {
+                const count = document.querySelectorAll(`input[name="${name}"]:checked`).length;
+                const input = document.querySelector(`input[name="${fields[name]}"]`);
+                if (input) input.value = count;
+            });
+
+            // Calculate ON PARADE
+            // 🔥 GET BACKEND VALUES (READONLY)
+            const strength = parseInt(document.getElementById("strength").value) || 0;
+            const sick = parseInt(document.getElementById("sick").value) || 0;
+            const leave = parseInt(document.getElementById("leave").value) || 0;
+            const pass = parseInt(document.getElementById("pass").value) || 0;
+
+
+            // 🔥 GET USER INPUT VALUES
+            const hospital = parseInt(document.querySelector('input[name="hospital"]').value) || 0;
+            const course = parseInt(document.querySelector('input[name="course"]').value) || 0;
+            const absent = parseInt(document.querySelector('input[name="absent"]').value) || 0;
+            const awol = parseInt(document.querySelector('input[name="awol"]').value) || 0;
+            const excuse_duty = parseInt(document.querySelector('input[name="excuse_duty"]').value) || 0;
+            const study_leave = parseInt(document.querySelector('input[name="study_leave"]').value) || 0;
+            const cds = parseInt(document.querySelector('input[name="cds"]').value) || 0;
+
+            // ✅ MATCH BACKEND EXACTLY
+            const totalOff = sick + leave + pass +
+                hospital + course + absent + awol + excuse_duty + study_leave + cds;
+
+            const onParade = Math.max(0, strength - totalOff);
+
+            document.getElementById("on_parade").value = onParade;
+        }
+
+        document.querySelectorAll(`
+            input[name="hospital"],
+            input[name="course"],
+            input[name="absent"],
+            input[name="awol"],
+            input[name="excuse_duty"],
+            input[name="study_leave"],
+            input[name="cds"]
+        `).forEach(input => {
+            input.addEventListener("input", updateCounts);
+        });
+        document.querySelectorAll(`
+    input[name="hospital"],
+    input[name="course"],
+    input[name="absent"],
+    input[name="awol"],
+    input[name="excuse_duty"],
+    input[name="study_leave"],
+    input[name="cds"]
+`).forEach(input => {
+            input.addEventListener("input", updateCounts);
+        });
+    </script>
+
+    <!-- Bootstrap JS (required for modals, popovers, etc.) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+
+
+</body>
+
+</html>

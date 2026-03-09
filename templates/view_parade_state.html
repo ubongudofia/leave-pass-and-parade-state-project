@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Parade State - {{ parade.date }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/2.5.0/remixicon.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        .status-section {
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .personnel-card {
+            margin-bottom: 15px;
+        }
+
+        .personnel-card .card-header {
+            padding: 10px;
+        }
+
+        .personnel-card .card-body {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .personnel-card ul {
+            margin: 0;
+            padding-left: 0;
+            list-style-type: none;
+        }
+
+        .personnel-card li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .personnel-card li:last-child {
+            border-bottom: none;
+        }
+
+        .absent-card {
+            border: 1px solid #f8d7da;
+        }
+
+        .absent-card .card-header {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .course-card {
+            border: 1px solid #cce5ff;
+        }
+
+        .course-card .card-header {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .leave-card {
+            border: 1px solid #fff3cd;
+        }
+
+        .leave-card .card-header {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pass-card {
+            border: 1px solid #d1e7dd;
+        }
+
+        .pass-card .card-header {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .hospital-card {
+            border: 1px solid #f8d7da;
+        }
+
+        .hospital-card .card-header {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .sick-card {
+            border: 1px solid #f8d7da;
+        }
+
+        .sick-card .card-header {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .awol-card {
+            border: 1px solid #f8d7da;
+        }
+
+        .awol-card .card-header {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .excuse-card {
+            border: 1px solid #cff4fc;
+        }
+
+        .excuse-card .card-header {
+            background: #cff4fc;
+            color: #055160;
+        }
+
+        .study-card {
+            border: 1px solid #fff3cd;
+        }
+
+        .study-card .card-header {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .cds-card {
+            border: 1px solid #cff4fc;
+        }
+
+        .cds-card .card-header {
+            background: #cff4fc;
+            color: #055160;
+        }
+
+        .staff-name {
+            font-weight: normal;
+        }
+
+        .staff-grade {
+            color: #666;
+            font-size: 11px;
+            display: block;
+        }
+
+        .staff-not-found {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .metadata-section {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+
+        .approve-button-section {
+    border-top: 1px solid #dee2e6;
+    padding-top: 15px;
+}
+
+.approve-button-section .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.approve-button-section .btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.action-history {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.action-history div {
+    margin-bottom: 5px;
+}
+
+.action-history div:last-child {
+    margin-bottom: 0;
+}
+
+
+
+.action-buttons {
+    border-top: 1px solid #dee2e6;
+    padding-top: 15px;
+}
+
+.action-buttons .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 4px;
+    margin-right: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-buttons .btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.action-buttons .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.action-buttons .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.action-buttons .btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.badge.bg-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge.bg-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.approval-timeline {
+    font-size: 0.9em;
+}
+
+.approval-timeline div {
+    line-height: 1.6;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+    </style>
+</head>
+
+<body>
+
+    <!-- Define macro once at the top -->
+    {% macro display_staff(service_number, staff_details) %}
+    {% if staff_details and staff_details.get(service_number) %}
+    {{ service_number }} - <span class="staff-name">{{ staff_details[service_number].fullName }}</span>
+    {% if staff_details[service_number].rankOrGrade %}
+    <span class="staff-grade">{{ staff_details[service_number].rankOrGrade }}</span>
+    {% endif %}
+    {% else %}
+    {{ service_number }} <span class="staff-not-found">(Staff record not found)</span>
+    {% endif %}
+    {% endmacro %}
+
+
+    {% macro display_creator(service_number, staff_details) %}
+    {% if staff_details and staff_details.get(service_number) %}
+        {{ service_number }} - {{ staff_details[service_number].fullName }}
+    {% else %}
+        {{ service_number }}
+    {% endif %}
+{% endmacro %}
+
+    <div class="dashboard-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% include "sidebar.html" %}
+
+        <div class="main-area">
+            {% include "base.html" %}
+            <div class="content-boxes">
+                <div class="application-container">
+                    <div class="parade_info">
+                        <div class="documents-table-container">
+                            <div class="table-container">
+                                <div class="table-header">
+                                    <h3>Parade State Details</h3>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="documents-table">
+                                        <thead>
+                                            <tr>
+                                                <th colspan="13">
+                                                    {{ parade.directorate }} CIVILIAN DAILY PARADE STATE AS AT - {{
+                                                    today }}
+                                                    {% if parade.batch %}
+                                                    (Batch {{ parade.batch }})
+                                                    {% endif %}
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <p style="text-align: center;">Strength</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">On Parade</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Sick</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Leave</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Pass</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Course</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Hosp Admin</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Absent</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Awol</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Excuse Duty</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Study Leave</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">CDS</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">Remarks</p>
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    <p style="text-align: center;">(a)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(b)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(c)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(d)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(e)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(f)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(g)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(h)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(i)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(j)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(k)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(l)</p>
+                                                </th>
+                                                <th>
+                                                    <p style="text-align: center;">(m)</p>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="documents-table-body">
+                                            <tr>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.strength or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.on_parade or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.sick or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.leave or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.pass or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.course or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.hospital or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.absent or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.awol or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.excuse_duty or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.study_leave or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.cds or 0 }}</p>
+                                                </td>
+                                                <td>
+                                                    <p style="text-align: center;">{{ parade.remark or '-' }}</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    
+
+                                    <!-- Personnel Details Section -->
+                                    <div class="row" style="margin-top: 30px;">
+                                        <h4>Personnel Details</h4>
+
+                                        {% if parade.details %}
+                                        <!-- ABSENT -->
+                                        {% if parade.details.staff_absent and parade.details.staff_absent|length > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card absent-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">Absent ({{ parade.details.staff_absent|length
+                                                        }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_absent %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- COURSE -->
+                                        {% if parade.details.staff_on_course and parade.details.staff_on_course|length >
+                                        0 %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card course-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">On Course ({{
+                                                        parade.details.staff_on_course|length }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_course %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- LEAVE -->
+                                        {% if parade.details.staff_on_leave and parade.details.staff_on_leave|length > 0
+                                        %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card leave-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">On Leave ({{
+                                                        parade.details.staff_on_leave|length }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_leave %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- PASS -->
+                                        {% if parade.details.staff_on_pass and parade.details.staff_on_pass|length > 0
+                                        %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card pass-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">On Pass ({{
+                                                        parade.details.staff_on_pass|length }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_pass %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- HOSPITAL -->
+                                        {% if parade.details.staff_on_hospital_admin and
+                                        parade.details.staff_on_hospital_admin|length > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card hospital-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">Hospital Admin ({{
+                                                        parade.details.staff_on_hospital_admin|length }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_hospital_admin %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- SICK -->
+                                        {% if parade.details.staff_on_sick and parade.details.staff_on_sick|length > 0
+                                        %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card sick-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">Sick ({{ parade.details.staff_on_sick|length
+                                                        }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_sick %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- AWOL -->
+                                        {% if parade.details.staff_on_awol and parade.details.staff_on_awol|length > 0
+                                        %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card awol-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">AWOL ({{ parade.details.staff_on_awol|length
+                                                        }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_awol %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- EXCUSE DUTY -->
+                                        {% if parade.details.staff_on_excuse_duty and
+                                        parade.details.staff_on_excuse_duty|length > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card excuse-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">Excuse Duty ({{
+                                                        parade.details.staff_on_excuse_duty|length }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_excuse_duty %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- STUDY LEAVE -->
+                                        {% if parade.details.staff_on_study_leave and
+                                        parade.details.staff_on_study_leave|length > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card study-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">Study Leave ({{
+                                                        parade.details.staff_on_study_leave|length }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_study_leave %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- CDS -->
+                                        {% if parade.details.staff_on_cds and parade.details.staff_on_cds|length > 0 %}
+                                        <div class="col-md-4">
+                                            <div class="card personnel-card cds-card">
+                                                <div class="card-header">
+                                                    <h5 style="margin: 0;">CDS ({{ parade.details.staff_on_cds|length
+                                                        }})</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <ul>
+                                                        {% for staff in parade.details.staff_on_cds %}
+                                                        <li>{{ display_staff(staff, parade.staff_details) }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Metadata -->
+                                    <div class="metadata-section">
+                                        <p><small>
+
+                                                <strong>Created by:</strong>
+                                                {% if parade.staff_details and
+                                                parade.staff_details.get(parade.createdBy) %}
+                                                {{ parade.createdBy }} - {{
+                                                parade.staff_details[parade.createdBy].fullName }}
+                                                {% else %}
+                                                {{ parade.createdBy }} <span class="staff-not-found">(Staff record not
+                                                    found)</span>
+                                                {% endif %}
+                                                <br>
+
+
+                                                <strong>Created at:</strong> {{ parade.createdAt.strftime('%Y-%m-%d
+                                                %H:%M:%S') if parade.createdAt else 'N/A' }}
+                                            </small></p>
+                                    </div>
+
+                                    <!-- Status Badge -->
+                                    <!-- <div class="status-section">
+                                        <strong>Status:</strong>
+                                        {% if parade.approval.status == "approved" %}
+                                        <span style="color: green; font-weight: bold;">Approved</span>
+                                        {% elif parade.approval.status == "rejected" %}
+                                        <span style="color: red; font-weight: bold;">Rejected</span>
+                                        {% else %}
+                                        <span style="color: orange; font-weight: bold;">Pending</span>
+                                        {% endif %}
+
+                                        {% if parade.approval.current_stage %}
+                                        <br><small>Current Stage: {{ parade.approval.current_stage.replace('_', '
+                                            ')|title }}</small>
+                                        {% endif %}
+                                    </div> -->
+
+                                    <div class="status-section">
+    <div class="status-info">
+        <strong>Status:</strong>
+        {% if parade.approval.status == "approved" %}
+        <span style="color: green; font-weight: bold;">Approved</span>
+        {% elif parade.approval.status == "rejected" %}
+        <span style="color: red; font-weight: bold;">Rejected</span>
+        {% else %}
+        <span style="color: orange; font-weight: bold;">Pending</span>
+        {% endif %}
+
+        {% if parade.approval.current_stage %}
+        <br><small>Current Stage: {{ parade.approval.current_stage.replace('_', ' ')|title }}</small>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons Section - Only shows when relevant role needs to take action -->
+    <div class="action-buttons" style="margin-top: 15px;">
+        {% set user_roles = user.roles if user.roles is defined else [] %}
+        
+        <!-- Civilian Officer - Approve button when it's their turn -->
+        {% if "Civilian Officer" in user_roles and 
+              parade.approval.current_stage == "civilian_officer" and 
+              parade.approval.civilian_officer.status == "pending" %}
+        <form action="{{ url_for('parade_state.approve_civilian', parade_id=parade._id) }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-success">
+                <i class="ri-check-double-line"></i> Approve as Civilian Officer
+            </button>
+        </form>
+
+        <!-- Deputy Director - Approve button when it's their turn -->
+        {% elif "Deputy_Director" in user_roles and 
+                parade.approval.current_stage == "deputy_director" and 
+                parade.approval.deputy_director.status == "pending" %}
+        <form action="{{ url_for('parade_state.approve_deputy', parade_id=parade._id) }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-primary">
+                <i class="ri-check-double-line"></i> Approve as Deputy Director
+            </button>
+        </form>
+
+        <!-- Chief Clerk - Acknowledge button when in documentation stage -->
+        {% elif "Chief Clerk" in user_roles and 
+                parade.approval.current_stage == "documentation" and 
+                parade.approval.chief_clerk.status != "acknowledged" %}
+        <form action="{{ url_for('parade_state.chief_clerk', parade_id=parade._id) }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-info">
+                <i class="ri-file-copy-line"></i> Acknowledge as Chief Clerk
+            </button>
+        </form>
+
+        <!-- DOA-RSM - Acknowledge button when in documentation stage -->
+        {% elif "DOA-RSM" in user_roles and 
+                parade.approval.current_stage == "documentation" and 
+                parade.approval.doa_rsm.status != "acknowledged" %}
+        <form action="{{ url_for('parade_state.doa_rsm', parade_id=parade._id) }}" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-info">
+                <i class="ri-archive-line"></i> Acknowledge as DOA-RSM
+            </button>
+        </form>
+        {% endif %}
+
+        <!-- Show message if user has already taken action -->
+        {% if "Civilian Officer" in user_roles and parade.approval.civilian_officer.actionBy == user.service_number %}
+        <span class="badge bg-success">You approved this parade state</span>
+        {% elif "Deputy_Director" in user_roles and parade.approval.deputy_director.actionBy == user.service_number %}
+        <span class="badge bg-success">You approved this parade state</span>
+        {% elif "Chief Clerk" in user_roles and parade.approval.chief_clerk.actionBy == user.service_number %}
+        <span class="badge bg-info">You acknowledged this parade state</span>
+        {% elif "DOA-RSM" in user_roles and parade.approval.doa_rsm.actionBy == user.service_number %}
+        <span class="badge bg-info">You acknowledged this parade state</span>
+        {% endif %}
+    </div>
+
+    <!-- Approval Timeline -->
+    <div class="approval-timeline" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+        <h6 style="margin-bottom: 10px;">Approval Timeline</h6>
+        
+        <!-- Submitted by Admin Officer -->
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 20px; text-align: center;">📤</span>
+            <strong>Submitted:</strong> 
+            {% if parade.createdBy %}
+                {{ display_creator(parade.createdBy, parade.staff_details) }}
+                <small class="text-muted">({{ parade.createdAt.strftime('%Y-%m-%d %H:%M') if parade.createdAt else 'N/A' }})</small>
+            {% endif %}
+        </div>
+        
+        <!-- Civilian Officer Approval -->
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 20px; text-align: center;">
+                {% if parade.approval.civilian_officer.status == "approved" %}✅{% else %}⏳{% endif %}
+            </span>
+            <strong>Civilian Officer:</strong>
+            {% if parade.approval.civilian_officer.actionBy %}
+                {{ display_creator(parade.approval.civilian_officer.actionBy, parade.staff_details) }}
+                <small class="text-muted">({{ parade.approval.civilian_officer.actionAt.strftime('%Y-%m-%d %H:%M') if parade.approval.civilian_officer.actionAt else 'N/A' }})</small>
+            {% else %}
+                <span class="text-muted">Pending</span>
+            {% endif %}
+        </div>
+        
+        <!-- Deputy Director Approval -->
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 20px; text-align: center;">
+                {% if parade.approval.deputy_director.status == "approved" %}✅{% elif parade.approval.deputy_director.status == "pending" %}⏳{% else %}⭕{% endif %}
+            </span>
+            <strong>Deputy Director:</strong>
+            {% if parade.approval.deputy_director.actionBy %}
+                {{ display_creator(parade.approval.deputy_director.actionBy, parade.staff_details) }}
+                <small class="text-muted">({{ parade.approval.deputy_director.actionAt.strftime('%Y-%m-%d %H:%M') if parade.approval.deputy_director.actionAt else 'N/A' }})</small>
+            {% else %}
+                <span class="text-muted">Pending</span>
+            {% endif %}
+        </div>
+        
+        <!-- Chief Clerk Acknowledgment -->
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 20px; text-align: center;">
+                {% if parade.approval.chief_clerk.status == "acknowledged" %}📋{% elif parade.approval.chief_clerk.status == "pending" %}⏳{% else %}⭕{% endif %}
+            </span>
+            <strong>Chief Clerk:</strong>
+            {% if parade.approval.chief_clerk.actionBy %}
+                {{ display_creator(parade.approval.chief_clerk.actionBy, parade.staff_details) }}
+                <small class="text-muted">({{ parade.approval.chief_clerk.actionAt.strftime('%Y-%m-%d %H:%M') if parade.approval.chief_clerk.actionAt else 'N/A' }})</small>
+            {% else %}
+                <span class="text-muted">Pending</span>
+            {% endif %}
+        </div>
+        
+        <!-- DOA-RSM Acknowledgment -->
+        <div style="margin-bottom: 8px;">
+            <span style="display: inline-block; width: 20px; text-align: center;">
+                {% if parade.approval.doa_rsm.status == "acknowledged" %}📋{% elif parade.approval.doa_rsm.status == "pending" %}⏳{% else %}⭕{% endif %}
+            </span>
+            <strong>DOA-RSM:</strong>
+            {% if parade.approval.doa_rsm.actionBy %}
+                {{ display_creator(parade.approval.doa_rsm.actionBy, parade.staff_details) }}
+                <small class="text-muted">({{ parade.approval.doa_rsm.actionAt.strftime('%Y-%m-%d %H:%M') if parade.approval.doa_rsm.actionAt else 'N/A' }})</small>
+            {% else %}
+                <span class="text-muted">Pending</span>
+            {% endif %}
+        </div>
+        
+        <!-- Final Status -->
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #dee2e6;">
+            <strong>Final Status:</strong>
+            {% if parade.approval.chief_clerk.status == "acknowledged" and parade.approval.doa_rsm.status == "acknowledged" %}
+                <span style="color: green; font-weight: bold;">Fully Processed and Archived</span>
+            {% elif parade.approval.status == "approved" %}
+                <span style="color: green; font-weight: bold;">Approved (Awaiting Documentation)</span>
+            {% elif parade.approval.status == "rejected" %}
+                <span style="color: red; font-weight: bold;">Rejected</span>
+            {% else %}
+                <span style="color: orange; font-weight: bold;">In Progress</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+                                    <!-- Back Button -->
+                                    <div class="back-button">
+                                        <a href="{{ url_for('parade_state.dashboard_parade_state') }}"
+                                            class="btn btn-secondary">
+                                            Back to Dashboard
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+    <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <script id="current-user-data" type="application/json">
+        {{ user | tojson }}
+    </script>
+
+    <script>
+        const CURRENT_USER = JSON.parse(
+            document.getElementById("current-user-data").textContent
+        );
+        window.CURRENT_USER = CURRENT_USER;
+    </script>
+
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

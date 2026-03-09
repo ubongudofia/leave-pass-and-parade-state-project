@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - DSA Pass/Leave</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/2.5.0/remixicon.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='pass_leave.css') }}">
+    <style>
+        .password-input {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #555;
+            font-size: 1.2rem;
+        }
+        .toggle-password.show-password::before {
+            content: "🙈";  /* eye-slash icon when visible */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="background-welcome">
+         {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div class="container-login">
+            <div class="login-card">
+                <div class="logo-login">
+                    <img src="{{ url_for('static', filename='images/dsa_logo.png') }}" width="50px" alt="DSA Logo">
+                </div>
+                <h1 class="login-tag">Login</h1>
+
+                <form id="loginForm" action="{{ url_for('auth.login') }}" method="POST">
+                    <div class="form-group">
+                        <label for="service_number">Service Number</label>
+                        <input 
+                            type="text" 
+                            id="service_number" 
+                            name="service_number" 
+                            placeholder="e.g. DSA/CIV/0245" 
+                            required 
+                            autofocus
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password"
+                                autocomplete="off" 
+                                required
+                            >
+                            <button type="button" class="toggle-password" aria-label="Toggle password visibility">
+                                👁️
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="login-btn">Log in</button>
+                </form>
+
+                <p style="text-align:center; margin-top: 1.5rem;">
+                    <small>Contact your administrator if you need access or forgot your password.</small>
+                </p>
+            </div>
+
+            <footer class="login-footer">
+                <p>© 2025 DCS Software Team</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        const toggleButton = document.querySelector('.toggle-password');
+        const passwordInput = document.getElementById('password');
+
+        toggleButton.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+
+            // Toggle eye / eye-slash icon
+            this.classList.toggle('show-password');
+            if (this.classList.contains('show-password')) {
+                this.textContent = '🙈';
+            } else {
+                this.textContent = '👁️';
+            }
+        });
+    </script>
+
+</body>
+</html>

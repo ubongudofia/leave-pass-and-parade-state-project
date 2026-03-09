@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Application - DSA</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f0f7ff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .tracking-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        
+        .tracking-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .tracking-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .tracking-header p {
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .tracking-body {
+            padding: 40px 30px;
+        }
+        
+        .input-group {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .input-group-text {
+            background: #f8f9fa;
+            border: none;
+            padding: 0 20px;
+            color: #666;
+        }
+        
+        .form-control {
+            border: none;
+            padding: 15px 20px;
+            font-size: 16px;
+        }
+        
+        .form-control:focus {
+            box-shadow: none;
+        }
+        
+        .btn-track {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-weight: 600;
+            border-radius: 12px;
+            width: 100%;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-track:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .info-box h5 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .info-item i {
+            color: #3498db;
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="tracking-card">
+        <div class="tracking-header">
+            <h1><i class="ri-search-line me-2"></i> Track Your Application</h1>
+            <p>Enter your Reference ID to check application status</p>
+        </div>
+        
+        <div class="tracking-body">
+            <form action="{{ url_for('application_track.track_application') }}" method="GET">
+                <div class="mb-4">
+                    <label class="form-label fw-bold mb-3">Reference ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="ri-hashtag"></i></span>
+                        <input type="text" 
+                               class="form-control" 
+                               name="reference_id"
+                               placeholder="e.g. DSA-DCS-2026-000000"
+                               required
+                               pattern="[A-Z0-9\-]+"
+                               title="Enter your Reference ID (letters, numbers, and hyphens only)">
+                    </div>
+                    <div class="form-text mt-2">
+                        <i class="ri-information-line"></i> Enter the Reference ID you received after submission
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-track">
+                    <i class="ri-search-line me-2"></i> Track Application
+                </button>
+            </form>
+            
+            <div class="info-box">
+                <h5><i class="ri-information-line me-2"></i> Need Help?</h5>
+                <div class="info-item">
+                    <i class="ri-question-line"></i>
+                    <div>
+                        <strong>Where to find Reference ID?</strong>
+                        <p class="mb-0 small">Check your email or the confirmation page after submission.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="ri-time-line"></i>
+                    <div>
+                        <strong>Processing Time</strong>
+                        <p class="mb-0 small">Applications typically take 3-5 working days for processing.</p>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="ri-customer-service-line"></i>
+                    <div>
+                        <strong>Contact Support</strong>
+                        <p class="mb-0 small">Email: support@dsa.gov.ng | Phone: 0800-DSA-HELP</p>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="{{ url_for('welcome_routes.welcome') }}" class="back-link">
+                <i class="ri-arrow-left-line me-1"></i> Back to Home
+            </a>
+        </div>
+    </div>
+</body>
+</html>

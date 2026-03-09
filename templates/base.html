@@ -1,0 +1,31 @@
+<!-- Header -->
+            <div class="header">
+                <div class="search-container">
+                    <i class="lucide-search"></i>
+                    <input type="text" placeholder="Search for anything..." />
+                </div>
+
+                <div class="header-actions">
+                    <button class="header-icon-button">
+                        <i class="lucide-calendar"></i>
+                    </button>
+                    <button class="header-icon-button">
+                        <i class="lucide-message-square"></i>
+                    </button>
+                    <button class="header-icon-button">
+                        <i class="lucide-bell"></i>
+                    </button>
+
+                    <div class="user-profile">
+                        <div class="user-info">
+                            <span class="user-name">{{ user.fullName }}</span>
+                            <span class="user-role">{{ user.roles|join(', ') }}</span>
+                        </div>
+                        <div class="user-avatar">
+                            <img src="https://ui-avatars.com/api/?name=Odegbami+Ahmed&background=9333EA&color=fff"
+                                alt="User" />
+                            <i class="lucide-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>

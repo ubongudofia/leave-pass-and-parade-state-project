@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Approver Dashboard - DSA Leave/Pass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='pass_leave.css') }}"> -->
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+
+        {% include "sidebar.html" %}
+        <!-- Sidebar -->
+
+        <!-- Main Content -->
+        <div class="main-area">
+
+            {% include "base.html" %}
+            <!-- Header -->
+
+            <div class="content-boxes">
+                <!-- Welcome Banner -->
+                <div class="banner">
+                    <div class="banner-content">
+                        <h1 class="general-header-text">Welcome</h1>
+                        <p class="general-small-text">You have Pending Document, lets
+                            see what you can do today!</p>
+                        <button class="check-now-btn">Check Now</button>
+                    </div>
+                    <div class="banner-image">
+                        <img src="{{ url_for('static', filename='images/welcome banner picture.png') }}"
+                        alt="Professional in suit">
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div class="dashboard-content">
+                    <!-- Status Cards -->
+                    <div class="status-cards">
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Total Submitted Leave </div>
+                                <div class="status-count">40</div>
+                            </div>
+                            <div class="status-icon blue">
+                                <i class="lucide-users"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Total Submitted Pass</div>
+                                <div class="status-count">99</div>
+                            </div>
+                            <div class="status-icon amber">
+                                <i class="lucide-check-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Approve Leave/Pass</div>
+                                <div class="status-count">20</div>
+                            </div>
+                            <div class="status-icon orange">
+                                <i class="lucide-x-circle"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Pending Leave/Pass</div>
+                                <div class="status-count">5</div>
+                            </div>
+                            <div class="status-icon purple">
+                                <i class="lucide-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Table -->
+                    <div class="documents-table-container">
+                        <div class="table-container">
+                            <div class="table-header">
+                                Recent Pending Applications
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="documents-table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="checkbox-all" /></th>
+                                            <th>Ref</th>
+                                            <th>Applicant</th>
+                                            <th>Service No.</th>
+                                            <th>Type</th>
+                                            <th>Directorate</th>
+                                            <th>Dates</th>
+                                            <th>Days</th>
+                                            <th>Reason</th>
+                                            <th>Attachments</th>
+                                            <th>Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="documents-table-body">
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td title=""></td>
+                                            <td class="attachments-count"></td>
+                                            <td>
+                                                <a href="" class="btn btn-view">View</a>
+                                                <a href="" class="btn btn-approve" onclick="">Approve</a>
+                                                <a href="" class="btn btn-reject" onclick="">Reject</a>
+                                                <a href="" class="btn btn-download" onclick="">Download receipt</a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Development version -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Production version -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>
+
+
+<td class="action-cell">
+                                                <div class="action-menu">
+                                                    <button class="menu-btn" onclick="toggleMenu(event)">
+                                                        <i class="ri-more-2-line"></i>
+                                                    </button>
+
+                                                    <div id="floatingMenu" class="floating-menu">
+
+                                                        <!-- View is always available -->
+                                                        <a href="{{ url_for('approver_dashboard.view_application', app_id=app._id|string) }}"
+                                                            class="btn btn-view">View</a>
+
+                                                        <!-- ================= Chief Clerk ================= -->
+                                                        {% if 'Chief Clerk' in user.roles %}
+
+                                                        {% set chief_step = (app.approvalChain
+                                                        | selectattr("role", "equalto", "Chief Clerk")
+                                                        | list | first) %}
+
+                                                        {% if chief_step %}
+
+                                                        <!-- Forward ONLY if not forwarded AND final approval still pending -->
+                                                        {% if chief_step.forward_status == "not_forwarded"
+                                                        and app.finalApproval
+                                                        and app.finalApproval.status == "pending" %}
+
+                                                        <a href="#" class="btn btn-forward"
+                                                            data-url="{{ url_for('approver_dashboard.forward', app_id=app._id|string) }}"
+                                                            onclick="openForwardModal(this)">
+                                                            Forward to SO1-DOA
+                                                        </a>
+
+                                                        {% endif %}
+
+
+                                                        <!-- Receipt if Final Approved -->
+                                                        {% if app.finalApproval and app.finalApproval.status ==
+                                                        "approved" %}
+                                                        <a href="#" class="btn btn-download"
+                                                            data-app-id="{{ app._id|string }}"
+                                                            onclick="openReceiptModal(this)">
+                                                            View / Download Receipt
+                                                        </a>
+                                                        {% endif %}
+
+                                                        {% endif %}
+
+                                                        <!-- ================= SO1-DOA ================= -->
+                                                        {% elif 'SO1-DOA' in user.roles %}
+
+                                                        {% if app.finalApproval and app.finalApproval.status ==
+                                                        "pending" %}
+                                                        <a href="#" class="btn btn-approve"
+                                                            data-url="{{ url_for('approver_dashboard.final_approve', app_id=app._id|string) }}"
+                                                            onclick="openFinalApproveModal(this)">
+                                                            Final Approve
+                                                        </a>
+
+                                                        <a href="#" class="btn btn-reject"
+                                                            data-url="{{ url_for('approver_dashboard.final_reject', app_id=app._id|string) }}"
+                                                            onclick="openFinalRejectModal(this)">
+                                                            Final Reject
+                                                        </a>
+                                                        {% endif %}
+
+                                                        <!-- Allow SO1-DOA to download receipt after approval -->
+                                                        {% if app.finalApproval and app.finalApproval.status ==
+                                                        "approved" %}
+                                                        <a href="#" class="btn btn-download"
+                                                            data-app-id="{{ app._id|string }}"
+                                                            onclick="openReceiptModal(this)">
+                                                            View / Download Receipt
+                                                        </a>
+                                                        {% endif %}
+
+                                                        <!-- ================= Other Approvers ================= -->
+                                                        {% else %}
+
+                                                        {% if app.finalApproval and app.finalApproval.status ==
+                                                        "pending" %}
+                                                        <a href="#" class="btn btn-approve"
+                                                            data-url="{{ url_for('approver_dashboard.approve', app_id=app._id|string) }}"
+                                                            onclick="openApproveModal(this)">
+                                                            Approve
+                                                        </a>
+
+                                                        <a href="#" class="btn btn-reject"
+                                                            data-url="{{ url_for('approver_dashboard.reject', app_id=app._id|string) }}"
+                                                            onclick="openRejectModal(this)">
+                                                            Reject
+                                                        </a>
+                                                        {% endif %}
+
+                                                        <!-- Receipt fallback for other roles -->
+                                                        {% if app.finalApproval and app.finalApproval.status ==
+                                                        "approved" %}
+                                                        <a href="#" class="btn btn-download"
+                                                            data-app-id="{{ app._id|string }}"
+                                                            onclick="openReceiptModal(this)">
+                                                            View / Download Receipt
+                                                        </a>
+                                                        {% endif %}
+
+                                                        {% endif %}
+
+                                                    </div>
+                                                </div>
+                                            </td>

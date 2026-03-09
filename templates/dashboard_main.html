@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Approver Dashboard - DSA Leave/Pass</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/2.5.0/remixicon.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% include "sidebar.html" %}
+        <!-- Sidebar -->
+
+        <!-- Main Content -->
+        <div class="main-area">
+
+            {% include "base.html" %}
+            <!-- Header -->
+
+            <div class="content-boxes">
+                <!-- Welcome Banner -->
+                <div class="banner">
+                    <div class="banner-content">
+                        <h1 class="general-header-text">Welcome, {{ user.roles|join(', ') }} </h1>
+                        <p class="general-small-text">
+                            You have <strong>{{ pending_count }}</strong> pending document{{ 's' if
+                            pending_count
+                            != 1 else '' }}.
+                        </p>
+                        <button class="check-now-btn">Check Now</button>
+                    </div>
+                    <div class="banner-image">
+                        <img style="width: 200px;" src="{{ url_for('static', filename='images/dsa-logo.png') }}"
+                            alt="Professional in suit">
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div class="dashboard-content">
+
+                    <!-- ==================== DOA-RSM STATISTICS SECTION ==================== -->
+                    {% if is_so1_doa and directorate_stats %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header" style="background: #e9ecef; padding: 15px;">
+                                    <h5 class="mb-0"><i class="ri-bar-chart-grouped-line"></i> Directorate Statistics
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for stat in directorate_stats %}
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100" style="border-left: 4px solid #28a745;">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-primary">{{ stat.directorate }}</h6>
+                                                    <h3 class="card-text">{{ stat.count }}</h3>
+                                                    <small class="text-muted">
+                                                        Latest: {{ stat.latest_date }} (Batch {{ stat.latest_batch }})
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- ==================== END DOA-RSM STATISTICS ==================== -->
+
+                    <!-- ==================== ENHANCED FILTER SECTION FOR ALL ROLES ==================== -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header" style="background: #e9ecef; padding: 15px;">
+                                    <h5 class="mb-0"><i class="ri-filter-3-line"></i> Filter Leave and Pass</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="GET" action="{{ url_for('approver_dashboard.dashboard_main') }}"
+                                        class="row g-3">
+                                        <!-- Directorate filter - only for DOA-RSM -->
+                                        {% if is_so1_doa %}
+                                        <div class="col-md-3">
+                                            <label for="directorate" class="form-label">Directorate</label>
+                                            <select name="directorate" id="directorate" class="form-select">
+                                                <option value="">All Directorates</option>
+                                                {% for dir in all_directorates %}
+                                                <option value="{{ dir }}" {% if filter_directorate==dir %}selected{%
+                                                    endif %}>
+                                                    {{ dir }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Status filter - for non-DOA roles -->
+                                        {% if not is_so1_doa %}
+                                        <div class="col-md-3">
+                                            <label for="status" class="form-label">Status</label>
+                                            <select name="status" id="status" class="form-select">
+                                                <option value="">All Status</option>
+                                                <option value="pending" {% if filter_status=='pending' %}selected{%
+                                                    endif %}>Pending</option>
+                                                <option value="approved" {% if filter_status=='issued' %}selected{%
+                                                    endif %}>Issued</option>
+                                                <option value="rejected" {% if filter_status=='rejected' %}selected{%
+                                                    endif %}>Rejected</option>
+                                                <option value="service_number" {% if filter_status=='service_number'
+                                                    %}selected{% endif %}>Service Number</option>
+                                                <option value="referenceId" {% if filter_status=='referenceId'
+                                                    %}selected{% endif %}>Reference ID</option>
+                                            </select>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Batch filter - for non-DOA roles -->
+                                        {% if not is_so1_doa %}
+                                        <div class="col-md-3">
+                                            <label for="batch" class="form-label">Leave Type</label>
+                                            <select name="batch" id="batch" class="form-select">
+                                                <option value="">All Leave Types</option>
+                                                <option value="casual" {% if filter_leave_type=='casual' %}selected{%
+                                                    endif %}>Casual Leave
+                                                </option>
+                                                <option value="sick" {% if filter_leave_type=='sick' %}selected{% endif
+                                                    %}>Sick Leave
+                                                </option>
+                                                <option value="annual" {% if filter_leave_type=='annual' %}selected{%
+                                                    endif %}>Annual Leave
+                                                </option>
+                                                <option value="compassionate" {% if filter_leave_type=='compassionate'
+                                                    %}selected{% endif %}>Compassionate Leave
+                                                </option>
+                                                <option value="paternity" {% if filter_leave_type=='paternity'
+                                                    %}selected{% endif %}>Paternity Leave
+                                                </option>
+                                                <option value="maternity" {% if filter_leave_type=='maternity'
+                                                    %}selected{% endif %}>Maternity Leave
+                                                </option>
+                                                <option value="disembarkation" {% if filter_leave_type=='disembarkation'
+                                                    %}selected{% endif %}>Disembarkation Leave
+                                                </option>
+
+                                            </select>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Date From filter - for all roles -->
+                                        <div class="col-md-3">
+                                            <label for="date_from" class="form-label">Date From</label>
+                                            <input type="date" class="form-control" id="date_from" name="date_from"
+                                                value="{{ filter_date_from }}">
+                                        </div>
+
+                                        <!-- Date To filter - for all roles -->
+                                        <div class="col-md-3">
+                                            <label for="date_to" class="form-label">Date To</label>
+                                            <input type="date" class="form-control" id="date_to" name="date_to"
+                                                value="{{ filter_date_to }}">
+                                        </div>
+
+                                        <!-- Action buttons -->
+                                        <div class="col-md-3 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-primary me-2">
+                                                <i class="ri-filter-line"></i> Apply Filters
+                                            </button>
+                                            <a href="{{ url_for('approver_dashboard.dashboard_main') }}"
+                                                class="btn btn-secondary">
+                                                <i class="ri-close-line"></i> Clear
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ==================== END FILTER SECTION ==================== -->
+
+
+                    <!-- Status Cards (you can make these dynamic later) -->
+                    <div class="status-cards">
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Total Submitted</div>
+                                <div class="status-count">{{ total_count }}</div>
+                            </div>
+                            <div class="status-icon orange">
+                                <i class="ri-file-copy-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Issued</div>
+                                <div class="status-count">{{ approved_count }}</div>
+                            </div>
+                            <div class="status-icon blue">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Rejected</div>
+                                <div class="status-count">{{ rejected_count }}</div>
+                            </div>
+                            <div class="status-icon amber">
+                                <i class="ri-close-circle-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Pending</div>
+                                <div class="status-count">{{ pending_count }}</div>
+                            </div>
+                            <div class="status-icon purple">
+                                <i class="ri-time-line"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Table -->
+                    <div class="documents-table-container">
+                        <div class="table-container">
+                            <div class="table-header">
+                                Recent Pending Applications
+                            </div>
+
+                            <!-- Replace your existing filter-table div with this -->
+                            <div class="filter-table mb-3 d-flex align-items-center flex-wrap">
+                                <div style="padding: 10px;" class="filter-group me-2 mb-2">
+                                    <label for="status-filter" class="me-2 fw-bold">Quick Filter:</label>
+
+                                    <select id="status-filter" class="form-select form-select-sm"
+                                        style="width: auto; min-width: 180px;">
+                                        <option value="">All Applications</option>
+                                        <optgroup label="By Status">
+                                            <option value="status-issued">✓ Issued</option>
+                                            <option value="status-rejected">✗ Rejected</option>
+                                            <option value="status-pending">⏳ Pending</option>
+                                        </optgroup>
+                                        <optgroup label="By Leave Type">
+                                            <option value="annual">📅 Annual Leave</option>
+                                            <option value="casual">🎯 Casual Leave</option>
+                                            <option value="sick">🤒 Sick Leave</option>
+                                            <option value="compassionate">💝 Compassionate Leave</option>
+                                            <option value="paternity">👨‍👦 Paternity Leave</option>
+                                            <option value="maternity">👩‍👧 Maternity Leave</option>
+                                            <option value="disembarkation">✈️ Disembarkation Leave</option>
+                                        </optgroup>
+                                        <optgroup label="By Date">
+                                            <option value="date-picker">📆 Specific Date</option>
+                                            <option value="month-picker">📅 Month</option>
+                                        </optgroup>
+                                    </select>
+
+                                </div>
+                                <!-- Reset button -->
+                                <button style="margin-top: 1.7rem;" class="btn btn-sm btn-outline-secondary ms-2 mb-2"
+                                    onclick="resetQuickFilters()" title="Reset all filters">
+                                    <i class="ri-refresh-line"></i> Reset
+                                </button>
+
+                                <!-- Date picker (hidden by default) -->
+                                <div id="date-picker-container"
+                                    style="display: none; margin-left: 10px; margin-bottom: 2px;">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="ri-calendar-line"></i></span>
+                                        <input type="date" id="date-filter" class="form-control" style="width: 150px;">
+                                    </div>
+                                </div>
+
+                                <!-- Month picker (hidden by default) -->
+                                <div id="month-picker-container"
+                                    style="display: none; margin-left: 10px; margin-bottom: 2px;">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="ri-calendar-2-line"></i></span>
+                                        <input type="month" id="month-filter" class="form-control"
+                                            style="width: 150px;">
+                                    </div>
+                                </div>
+
+
+
+                                <!-- Filter count badge -->
+                                <span id="filter-count" class="badge bg-info ms-2 mb-2" style="display: none;">0
+                                    results</span>
+                            </div>
+
+                            <div class="table-responsive">
+                                {% if applications %}
+                                <table class="documents-table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="checkbox-all" /></th>
+                                            <th>Ref</th>
+                                            <th>Applicant</th>
+                                            <th>Service No.</th>
+                                            <th>Leave Type</th>
+                                            <th>Status</th>
+                                            <!-- <th>Directorates</th> -->
+                                            <th>Dates</th>
+                                            <th>Number of Days</th>
+                                            <th>Reason</th>
+                                            <th>Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="documents-table-body">
+                                        {% for app in applications %}
+                                        <tr>
+                                            <td><input type="checkbox" class="checkbox-row" /></td>
+                                            <td>{{ app.referenceId|string|truncate(12, True, '...') }}</td>
+                                            <td>{{ app.applicantName }}</td>
+                                            <td>{{ app.applicantId }}</td>
+                                            <td>{{ app.leave_type|capitalize }}</td>
+                                            <td>
+                                                <div class="status-container">
+                                                    {% if app.status == "issued" %}
+                                                    <div class="status-pill issued">
+                                                        <div class="status-dot"></div>
+                                                        <span>Issued</span>
+                                                    </div>
+                                                    {% elif app.status == "rejected" %}
+                                                    <div class="status-pill rejected">
+                                                        <div class="status-dot"></div>
+                                                        <span>Rejected</span>
+                                                    </div>
+                                                    {% elif app.status == "pending" %}
+                                                    <div class="status-pill pending">
+                                                        <div class="status-dot"></div>
+                                                        <span>Pending</span>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                            </td>
+                                            <!-- <td>
+                                                {{app.directorate }}
+                                            </td> -->
+                                            <td>
+                                                {{ app.startDate.strftime('%d %b %Y') }} –
+                                                {{ app.endDate.strftime('%d %b %Y') }}
+                                            </td>
+                                            <td>{{ app.numberOfDays }}</td>
+                                            <td title="{{ app.reason }}">
+                                                {{ app.reason|truncate(50, True, '...') }}
+                                            </td>
+                                            <td>
+                                                {% set days_ago = (current_time - app.createdAt).days %}
+                                                {{ days_ago }} day{{ 's' if days_ago != 1 else '' }} ago
+                                            </td>
+
+                                            <td class="action-cell">
+                                                <div class="action-menu">
+                                                    <button class="menu-btn"
+                                                        onclick="toggleLeaveMenu(event, this, '{{ app._id }}')">
+                                                        <i class="ri-more-2-line"></i>
+                                                    </button>
+
+                                                    <div id="floatingMenu-{{ app._id }}" class="floating-menu">
+                                                        <a href="javascript:void(0);"
+                                                            class="btn btn-sm btn-outline-info"
+                                                            onclick="openApproverPreviousModal('{{ app.applicantId }}', '{{ app.applicantName|escape }}')">
+                                                            <i class="fas fa-history me-1"></i> Previous Leaves
+                                                        </a>
+                                                        <a href="{{ url_for('approver_dashboard.view_application', app_id=app._id|string) }}"
+                                                            class="btn btn-view">View Application
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                <div class="no-data">
+                                    <p>No pending applications assigned to you at the moment.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Receipt View Modal -->
+                    <div id="receiptModal" class="modal-overlay">
+                        <div class="modal-box receipt-modal">
+                            <h3>Defence Space Administration<br>Leave/Pass Receipt</h3>
+                            <button class="close-modal" onclick="closeReceiptModal()">×</button>
+
+                            <div class="receipt-content" id="receiptContent">
+                                <!-- Dynamic content will be loaded here via JS -->
+                                <p>Loading receipt...</p>
+                            </div>
+
+                            <div class="modal-actions">
+                                <button type="button" class="cancel-btn" onclick="closeReceiptModal()">Close</button>
+                                <button class="download-btn" onclick="downloadReceipt()">Download PDF</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reject Confirmation Modal -->
+                    <div id="rejectModal" class="modal-overlay">
+                        <div class="modal-box">
+
+                            <h3>Reject Application</h3><br>
+                            <p class="subtitle">Confirm your Rejection for this Leave/Pass request</p><br><br>
+
+                            <form id="rejectForm" method="POST">
+                                <div class="form-group">
+                                    <label for="comments">Comments (required for rejection)</label>
+                                    <input type="text" autocomplete="off" id="comments" name="comments" placeholder="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="Comments">Name/Signature</label>
+                                    <input type="text" autocomplete="off" value="{{ user.fullName }}"
+                                        id="signature_name" name="signature_name" placeholder="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="Comments">Role</label>
+                                    <input type="text" autocomplete="off" value="{{ user.roles[0] or '' }}" id="rank"
+                                        name="rank" placeholder="">
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="cancel-btn"
+                                        onclick="closeRejectModal()">Cancel</button>
+                                    <button type="submit" class="continues-btn">Confirm Rejection</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Approval Confirmation Modal -->
+                    <div id="approveModal" class="modal-overlay">
+                        <div class="modal-box">
+
+                            <h3>Approve Application</h3><br>
+                            <p class="subtitle">Confirm your approval for this leave/pass request</p><br><br>
+
+                            <form id="approveForm" method="POST">
+                                <div class="form-group">
+                                    <label for="comments">Comments</label>
+                                    <input type="text" autocomplete="off" id="comments" name="comments" placeholder="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="Comments">Name/Signature</label>
+                                    <input type="text" autocomplete="off" value="{{ user.fullName }}"
+                                        id="signature_name" name="signature_name" placeholder="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="Comments">Role</label>
+                                    <input type="text" autocomplete="off" value="{{ user.roles[0] or '' }}" id="rank"
+                                        name="rank" placeholder="">
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="cancel-btn"
+                                        onclick="closeApproveModal()">Cancel</button>
+                                    <button type="submit" class="continuess-btn">Confirm Approval</button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Forward Confirmation Modal (for Chief Clerk) -->
+                    <div id="forwardModal" class="modal-overlay">
+                        <div class="modal-box">
+
+                            <h3>Forward Application</h3><br>
+                            <p class="subtitle">Confirm forwarding this application to SO1-DOA for final approval</p>
+                            <br><br>
+
+                            <form id="forwardForm" method="POST">
+                                <div class="form-group">
+                                    <label for="forward_comments">Comments (optional)</label>
+                                    <input type="text" id="forward_comments" name="comments"
+                                        placeholder="Any remarks before forwarding...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="forward_signature">Name/Signature</label>
+                                    <input type="text" id="forward_signature" name="signature_name"
+                                        value="{{ user.fullName }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="forward_rank">Rank / Grade</label>
+                                    <input type="text" id="forward_rank" name="rank"
+                                        value="{{ user.rankOrGrade or '' }}" readonly>
+                                </div>
+                            </form>
+
+                            <div class="modal-actions">
+                                <button type="button" class="cancel-btn" onclick="closeForwardModal()">Cancel</button>
+                                <button type="submit" class="continuess-btn" onclick="confirmForward()">Confirm
+                                    Forward</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+
+                    <!-- Final Approve Modal (SO1-DOA) -->
+                    <div id="finalApproveModal" class="modal-overlay">
+                        <div class="modal-box">
+                            <h3>Final Approval</h3><br>
+                            <p class="subtitle">Confirm final approval and receipt issuance</p><br><br>
+
+                            <form id="finalApproveForm" method="POST">
+                                <div class="form-group">
+                                    <label for="final_comments">Comments (optional)</label>
+                                    <input id="final_comments" name="comments" placeholder="Final remarks...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="final_signature">Name/Signature</label>
+                                    <input type="text" id="final_signature" name="signature_name"
+                                        value="{{ user.fullName }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="final_rank">Rank / Grade</label>
+                                    <input type="text" id="final_rank" name="rank" value="{{ user.rankOrGrade or '' }}"
+                                        readonly>
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="cancel-btn"
+                                        onclick="closeFinalApproveModal()">Cancel</button>
+                                    <button type="submit" class="continuess-btn">Confirm Final Approval</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Final Reject Modal (SO1-DOA) -->
+                    <div id="finalRejectModal" class="modal-overlay">
+                        <div class="modal-box">
+                            <h3>Final Rejection</h3><br>
+                            <p class="subtitle">Confirm final rejection of this application</p><br><br>
+
+                            <form id="finalRejectForm" method="POST">
+                                <div class="form-group">
+                                    <label for="final_reject_comments">Comments (required)</label>
+                                    <input type="text" id="final_reject_comments" name="comments" required
+                                        placeholder="Reason for final rejection...">
+                                </div>
+                                <div class="form-group">
+                                    <label for="final_reject_signature">Name/Signature</label>
+                                    <input type="text" id="final_reject_signature" name="signature_name"
+                                        value="{{ user.fullName }}" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label for="final_reject_rank">Rank / Grade</label>
+                                    <input type="text" id="final_reject_rank" name="rank"
+                                        value="{{ user.rankOrGrade or '' }}" readonly>
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="cancel-btn"
+                                        onclick="closeFinalRejectModal()">Cancel</button>
+                                    <button type="submit" class="continues-btn">Confirm Final Rejection</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+
+                    <!-- Approver's View Previous Leaves Modal -->
+                    <div class="modal fade" id="approverPreviousModal" tabindex="-1"
+                        aria-labelledby="approverPreviousModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="approverPreviousModalLabel">Applicant's Previous Leave
+                                        History</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="approverLoading" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status"></div>
+                                        <p class="mt-3">Loading applicant's leave history...</p>
+                                    </div>
+
+                                    <div id="approverContent" style="display: none;">
+                                        <div id="approverLeaveList"></div>
+                                    </div>
+
+                                    <div id="approverEmpty" class="text-center py-5 text-muted" style="display: none;">
+                                        <i class="fas fa-history fa-4x mb-3 opacity-50"></i>
+                                        <p>No previous leave records found in the last 6 months.</p>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (required for modals, popovers, etc.) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js"></script>
+
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <script id="current-user-data" type="application/json">
+                        {{ user | tojson }}
+                    </script>
+
+    <script>
+        const CURRENT_USER = JSON.parse(
+            document.getElementById("current-user-data").textContent
+        );
+        window.CURRENT_USER = CURRENT_USER;
+    </script>
+
+
+    <script>
+
+
+        function openApproverPreviousModal(applicantId, applicantName = '') {
+            const modalTitle = document.getElementById('approverPreviousModalLabel');
+            modalTitle.textContent = applicantName
+                ? `Previous Leaves – ${applicantName} (${applicantId})`
+                : `Previous Leaves – ${applicantId}`;
+
+            const modal = new bootstrap.Modal(document.getElementById('approverPreviousModal'));
+
+            // Show loading, hide content
+            document.getElementById('approverLoading').style.display = 'block';
+            document.getElementById('approverContent').style.display = 'none';
+            document.getElementById('approverEmpty').style.display = 'none';
+
+            // Clear previous content
+            document.getElementById('approverLeaveList').innerHTML = '';
+
+            // Ensure the ID is properly encoded
+            const cleanId = String(applicantId).trim();
+            const url = `/applicant-previous-leaves?applicant_id=${encodeURIComponent(cleanId)}`;
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.error || `HTTP ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Received data:', data);
+
+                    document.getElementById('approverLoading').style.display = 'none';
+
+                    const listDiv = document.getElementById('approverLeaveList');
+                    listDiv.innerHTML = '';
+
+                    if (data.success && data.applications && data.applications.length > 0) {
+                        data.applications.forEach(app => {
+                            const card = document.createElement('div');
+
+                            // Determine card color based on status
+                            let borderColor = 'warning';
+                            let badgeColor = 'warning';
+                            if (app.status === 'rejected') {
+                                borderColor = 'danger';
+                                badgeColor = 'danger';
+                            } else if (app.status === 'issued') {
+                                borderColor = 'success';
+                                badgeColor = 'success';
+                            } else if (app.status === 'approved') {
+                                borderColor = 'info';
+                                badgeColor = 'success';
+                            }
+
+                            card.className = `card mb-3 border-${borderColor}`;
+
+                            // ============ FINALAPPROVAL-OPTIMIZED APPROVAL CHAIN ============
+                            let approvalChainHtml = '';
+
+                            if (app.approvalChain && app.approvalChain.length > 0) {
+
+                                // ----- PROCESS APPROVAL CHAIN -----
+                                let chainItems = [];
+                                let rejectingApprover = null;
+                                let isRejected = false;
+
+                                // Process main approval chain
+                                for (let i = 0; i < app.approvalChain.length; i++) {
+                                    const approver = app.approvalChain[i];
+                                    const role = approver.role || 'Unknown';
+
+                                    if (approver.status === 'approved') {
+                                        chainItems.push(`<span class="text-success fw-bold">${role}</span> ✓`);
+                                    } else if (approver.status === 'rejected') {
+                                        chainItems.push(`<span class="text-danger fw-bold">${role}</span> ✗`);
+                                        rejectingApprover = approver;
+                                        isRejected = true;
+                                        break; // Stop at rejection
+                                    } else if (approver.status === 'pending' && !isRejected) {
+                                        // Only show pending if we haven't hit a rejection
+                                        chainItems.push(`<span class="text-muted fw-bold">${role}</span> <span class="text-muted">(pending)</span>`);
+                                        break; // Stop at first pending
+                                    }
+                                }
+
+                                // ----- ADD SO1-DOA FROM FINALAPPROVAL -----
+                                // Only add SO1-DOA if application is approved/issued and not rejected
+                                if (!isRejected && app.finalApproval) {
+                                    const finalStatus = app.finalApproval.status;
+
+                                    if (app.status === 'issued' || finalStatus === 'approved' || finalStatus === 'issued') {
+                                        chainItems.push(`<span class="text-success fw-bold">SO1-DOA</span> ✓`);
+                                    } else if (finalStatus === 'rejected') {
+                                        chainItems.push(`<span class="text-danger fw-bold">SO1-DOA</span> ✗`);
+                                        rejectingApprover = { role: 'SO1-DOA', comments: app.finalApproval.comments };
+                                    }
+                                }
+
+                                const chainText = chainItems.join(' <span class="text-muted">→</span> ');
+
+                                // ----- REJECTION INFORMATION -----
+                                let rejectionInfo = '';
+                                if (rejectingApprover && rejectingApprover.comments) {
+                                    rejectionInfo = `
+                                <div class="text-danger mt-1">
+                                    <small>
+                                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                                        <strong>Rejected by ${rejectingApprover.role}:</strong> "${rejectingApprover.comments}"
+                                    </small>
+                                </div>
+                            `;
+                                } else if (rejectingApprover) {
+                                    rejectionInfo = `
+                                <div class="text-danger mt-1">
+                                    <small>
+                                        <i class="bi bi-exclamation-triangle-fill"></i> 
+                                        <strong>Rejected by ${rejectingApprover.role}</strong>
+                                    </small>
+                                </div>
+                            `;
+                                }
+
+                                // ----- CHIEF CLERK FORWARDING STATUS -----
+                                let pendingInfo = '';
+                                if (app.status === 'pending' || app.status === 'approved') {
+                                    const chiefClerk = app.approvalChain.find(a => a.role === 'Chief Clerk');
+                                    if (chiefClerk && chiefClerk.status === 'pending') {
+                                        pendingInfo = `
+                                    <div class="text-warning mt-1">
+                                        <small>
+                                            <i class="bi bi-hourglass-split"></i> 
+                                            <strong>Pending:</strong> Chief Clerk to forward to SO1-DOA
+                                        </small>
+                                    </div>
+                                `;
+                                    }
+                                }
+
+                                // ----- ISSUED/APPROVED INFORMATION FROM FINALAPPROVAL -----
+                                let approvedInfo = '';
+                                if (app.status === 'issued' && app.finalApproval) {
+                                    const receipt = app.finalApproval.receipt || {};
+                                    const receiptNumber = receipt.receiptNumber || 'N/A';
+                                    const issuedDate = receipt.issuedDate || 'N/A';
+
+                                    approvedInfo = `
+                                <div class="text-success mt-2">
+                                    <small>
+                                        <i class="bi bi-check-circle-fill"></i> 
+                                        <strong>✓ Approved by SO1-DOA • Leave Issued</strong><br>
+                                        <span class="text-muted">Receipt: ${receiptNumber} | Issued: ${issuedDate}</span>
+                                    </small>
+                                </div>
+                            `;
+                                } else if (app.status === 'approved' && app.finalApproval) {
+                                    approvedInfo = `
+                                <div class="text-success mt-1">
+                                    <small>
+                                        <i class="bi bi-check-circle"></i> 
+                                        <strong>✓ Approved by SO1-DOA</strong> • Ready for issuance
+                                    </small>
+                                </div>
+                            `;
+                                } else if (app.finalApproval && app.finalApproval.status === 'approved' && app.status !== 'issued') {
+                                    // Fallback: if finalApproval shows approved but status not updated
+                                    approvedInfo = `
+                                <div class="text-success mt-1">
+                                    <small>
+                                        <i class="bi bi-check-circle"></i> 
+                                        <strong>✓ Approved by SO1-DOA</strong> • Awaiting issuance
+                                    </small>
+                                </div>
+                            `;
+                                }
+
+                                // ----- FINAL APPROVAL SUMMARY FROM FINALAPPROVAL FIELD -----
+                                let finalApprovalSummary = '';
+                                if (app.finalApproval && !rejectionInfo && !approvedInfo) {
+                                    if (app.finalApproval.approverId) {
+                                        finalApprovalSummary = `
+                                    <div class="text-info mt-1">
+                                        <small>
+                                            <i class="bi bi-info-circle"></i>
+                                            <strong>Final Approver:</strong> ${app.finalApproval.approverId || 'SO1-DOA'}
+                                            ${app.finalApproval.status ? `• Status: ${app.finalApproval.status}` : ''}
+                                        </small>
+                                    </div>
+                                `;
+                                    }
+                                }
+
+                                // Build the HTML if we have chain items
+                                if (chainItems.length > 0) {
+                                    approvalChainHtml = `
+                                <div class="mt-3 pt-2 border-top">
+                                    <div class="small">
+                                        <div class="text-muted mb-1 fw-bold">
+                                            APPROVAL WORKFLOW:
+                                        </div>
+                                        <div class="approval-chain mb-1" style="line-height: 1.8;">
+                                            ${chainText}
+                                        </div>
+                                        ${rejectionInfo}
+                                        ${pendingInfo}
+                                        ${approvedInfo}
+                                        ${finalApprovalSummary}
+                                    </div>
+                                </div>
+                            `;
+                                }
+                            }
+                            // ============ END FINALAPPROVAL-OPTIMIZED APPROVAL CHAIN ============
+
+                            // Format dates properly
+                            const appliedDate = app.createdAt || 'N/A';
+                            const effectiveDate = app.dates?.effectiveDate || 'N/A';
+                            const endDate = app.dates?.endDate || 'N/A';
+
+                            card.innerHTML = `
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">${app.leave_type ? app.leave_type.replace(/_/g, ' ').toUpperCase() : 'UNKNOWN'}</h6>
+                                    <span class="small text-muted">
+                                        <i class="bi bi-tag"></i> Ref: ${app.referenceId || 'N/A'}
+                                    </span>
+                                </div>
+                                <span class="badge bg-${badgeColor} px-3 py-2">
+                                    ${app.status ? app.status.toUpperCase() : 'UNKNOWN'}
+                                </span>
+                            </div>
+                            
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div class="small text-muted">
+                                        <i class="bi bi-calendar3"></i> 
+                                        <strong>${effectiveDate} – ${endDate}</strong>
+                                        <span class="badge bg-light text-dark ms-2">${app.numberOfDays || '?'} days</span>
+                                    </div>
+                                    <div class="small text-muted mt-1">
+                                        <i class="bi bi-clock"></i> Applied: ${appliedDate}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            ${app.reason ? `
+                                <div class="mt-2 small p-2 bg-light rounded">
+                                    <i class="bi bi-chat-text text-muted"></i>
+                                    <em class="text-muted">Reason:</em> 
+                                    <span class="text-dark">${app.reason}</span>
+                                </div>
+                            ` : ''}
+                            
+                            ${approvalChainHtml}
+                        </div>
+                    `;
+
+                            listDiv.appendChild(card);
+                        });
+
+                        document.getElementById('approverContent').style.display = 'block';
+                        document.getElementById('approverEmpty').style.display = 'none';
+                    } else {
+                        document.getElementById('approverContent').style.display = 'none';
+                        document.getElementById('approverEmpty').style.display = 'block';
+
+                        const emptyDiv = document.getElementById('approverEmpty');
+                        emptyDiv.innerHTML = `
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        No previous leave applications found for ${applicantName || applicantId} in the last 6 months.
+                    </div>
+                `;
+                    }
+                })
+                .catch(err => {
+                    console.error('Error fetching history:', err);
+                    document.getElementById('approverLoading').style.display = 'none';
+
+                    const contentDiv = document.getElementById('approverContent');
+                    contentDiv.style.display = 'block';
+                    contentDiv.innerHTML = `
+                <div class="alert alert-danger mb-0">
+                    <strong><i class="bi bi-exclamation-triangle-fill"></i> Failed to load history.</strong><br>
+                    ${err.message.includes('403') ? 'Access denied.' : 'Server error. Please try again.'}
+                </div>
+            `;
+                    document.getElementById('approverEmpty').style.display = 'none';
+                });
+
+            modal.show();
+        }
+
+
+
+
+
+        // LEAVE AND PASS ACTION DROPDOWN JS
+        function toggleLeaveMenu(event, button, appId) {
+            event.stopPropagation();
+
+            // Get the specific menu for this application
+            const menu = document.getElementById(`floatingMenu-${appId}`);
+            if (!menu) return;
+
+            // Hide all other menus first
+            document.querySelectorAll('[id^="floatingMenu-"]').forEach(m => {
+                if (m.id !== `floatingMenu-${appId}`) {
+                    m.style.display = 'none';
+                }
+            });
+
+            // Toggle current menu
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+            } else {
+                // Position the menu
+                const rect = button.getBoundingClientRect();
+
+                // Use fixed positioning for manual placement
+                menu.style.position = 'fixed';
+                menu.style.top = rect.bottom + 'px';
+                menu.style.left = rect.left + 'px';
+                menu.style.display = 'block';
+
+                // Ensure menu stays within viewport
+                const menuRect = menu.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                // Adjust if menu goes off-screen to the right
+                if (menuRect.right > viewportWidth) {
+                    menu.style.left = (viewportWidth - menuRect.width - 10) + 'px';
+                }
+
+                // Adjust if menu goes off-screen at the bottom
+                if (menuRect.bottom > viewportHeight) {
+                    menu.style.top = (rect.top - menuRect.height) + 'px';
+                }
+            }
+        }
+
+        // Close when clicking outside
+        document.addEventListener("click", function (event) {
+            if (!event.target.closest('.menu-btn') && !event.target.closest('[id^="floatingMenu-"]')) {
+                document.querySelectorAll('[id^="floatingMenu-"]').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        // Close on escape key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('[id^="floatingMenu-"]').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        // Close on scroll
+        window.addEventListener('scroll', function () {
+            document.querySelectorAll('[id^="floatingMenu-"]').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }, { passive: true });
+
+
+
+
+
+
+        // Add this to your main.js or in a script tag in dashboard_main.html
+
+        // ==================== QUICK FILTER FUNCTIONS ====================
+
+        function applyFilter() {
+            const filterSelect = document.getElementById('status-filter');
+            const filterValue = filterSelect.value;
+
+            // Hide all filter containers first
+            document.getElementById('date-picker-container').style.display = 'none';
+            document.getElementById('month-picker-container').style.display = 'none';
+
+            if (filterValue === 'date-picker') {
+                // Show date picker
+                document.getElementById('date-picker-container').style.display = 'inline-block';
+            } else if (filterValue === 'month-picker') {
+                // Show month picker
+                document.getElementById('month-picker-container').style.display = 'inline-block';
+            } else if (filterValue.startsWith('status-')) {
+                // Filter by status
+                const status = filterValue.replace('status-', '');
+                filterTableByStatus(status);
+            } else if (['annual', 'casual', 'sick', 'compassionate', 'paternity', 'maternity', 'disembarkation'].includes(filterValue)) {
+                // Filter by leave type
+                filterTableByLeaveType(filterValue);
+            } else {
+                // Show all rows
+                showAllRows();
+            }
+        }
+
+        function filterTableByStatus(status) {
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const statusCell = row.querySelector('.status-pill span');
+
+                if (statusCell) {
+                    const rowStatus = statusCell.textContent.toLowerCase();
+                    if (rowStatus === status.toLowerCase()) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+            updateFilterCount()
+            toggleNoResultsMessage(visibleCount === 0);
+
+        }
+
+        function filterTableByLeaveType(leaveType) {
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const leaveTypeCell = row.cells[4]; // Leave Type column (adjust index if needed)
+
+                if (leaveTypeCell) {
+                    const rowLeaveType = leaveTypeCell.textContent.toLowerCase().trim();
+                    if (rowLeaveType === leaveType.toLowerCase() ||
+                        rowLeaveType.includes(leaveType.toLowerCase())) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+            updateFilterCount()
+            toggleNoResultsMessage(visibleCount === 0);
+        }
+
+        function applyDateFilter() {
+            const dateInput = document.getElementById('date-filter');
+            const selectedDate = dateInput.value;
+
+            if (!selectedDate) return;
+
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            const filterDate = new Date(selectedDate);
+            filterDate.setHours(0, 0, 0, 0);
+
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const dateCell = row.cells[10]; // Submitted column (adjust index if needed)
+
+                if (dateCell) {
+                    const dateText = dateCell.textContent;
+                    // Parse relative date like "X days ago"
+                    const match = dateText.match(/(\d+)\s+day/);
+
+                    if (match) {
+                        const daysAgo = parseInt(match[1]);
+                        const rowDate = new Date();
+                        rowDate.setDate(rowDate.getDate() - daysAgo);
+                        rowDate.setHours(0, 0, 0, 0);
+
+                        if (rowDate.getTime() === filterDate.getTime()) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
+            }
+            updateFilterCount()
+            toggleNoResultsMessage(visibleCount === 0);
+        }
+
+        function applyMonthFilter() {
+            const monthInput = document.getElementById('month-filter');
+            const selectedMonth = monthInput.value;
+
+            if (!selectedMonth) return;
+
+            const [year, month] = selectedMonth.split('-');
+            const filterYear = parseInt(year);
+            const filterMonth = parseInt(month) - 1; // JavaScript months are 0-based
+
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const dateCell = row.cells[10]; // Submitted column (adjust index)
+
+                if (dateCell) {
+                    const dateText = dateCell.textContent;
+                    const match = dateText.match(/(\d+)\s+day/);
+
+                    if (match) {
+                        const daysAgo = parseInt(match[1]);
+                        const rowDate = new Date();
+                        rowDate.setDate(rowDate.getDate() - daysAgo);
+
+                        const rowYear = rowDate.getFullYear();
+                        const rowMonth = rowDate.getMonth();
+
+                        if (rowYear === filterYear && rowMonth === filterMonth) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                }
+            }
+            updateFilterCount()
+            toggleNoResultsMessage(visibleCount === 0);
+        }
+
+        function showAllRows() {
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = '';
+            }
+
+            // Remove no results message
+            const noResultsRow = document.getElementById('no-results-row');
+            if (noResultsRow) noResultsRow.remove();
+            updateFilterCount()
+        }
+
+        function toggleNoResultsMessage(show) {
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            let noResultsRow = document.getElementById('no-results-row');
+
+            if (show) {
+                if (!noResultsRow) {
+                    noResultsRow = document.createElement('tr');
+                    noResultsRow.id = 'no-results-row';
+                    const td = document.createElement('td');
+                    td.colSpan = 12; // Adjust based on your column count
+                    td.style.textAlign = 'center';
+                    td.style.padding = '30px';
+                    td.style.color = '#6c757d';
+                    td.style.fontStyle = 'italic';
+                    td.innerHTML = '<i class="ri-search-line"></i> No applications match the selected filter.';
+                    noResultsRow.appendChild(td);
+                    table.appendChild(noResultsRow);
+                }
+            } else if (noResultsRow) {
+                noResultsRow.remove();
+            }
+        }
+
+        function resetQuickFilters() {
+            // Reset dropdown
+            const filterSelect = document.getElementById('status-filter');
+            if (filterSelect) filterSelect.value = '';
+
+            // Hide pickers
+            document.getElementById('date-picker-container').style.display = 'none';
+            document.getElementById('month-picker-container').style.display = 'none';
+
+            // Clear date inputs
+            document.getElementById('date-filter').value = '';
+            document.getElementById('month-filter').value = '';
+
+            // Show all rows
+            showAllRows();
+        }
+
+        // Search by text in table
+        function searchTable(columnIndex, searchText) {
+            const table = document.getElementById('documents-table-body');
+            if (!table || !searchText) return;
+
+            const rows = table.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cell = row.cells[columnIndex];
+
+                if (cell) {
+                    const cellText = cell.textContent.toLowerCase().trim();
+                    if (cellText.includes(searchText.toLowerCase())) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+
+            toggleNoResultsMessage(visibleCount === 0);
+        }
+
+        // ==================== INITIALIZATION ====================
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🔧 Quick filters initialized');
+
+            // Add event listener for the filter dropdown
+            const filterSelect = document.getElementById('status-filter');
+            if (filterSelect) {
+                filterSelect.addEventListener('change', applyFilter);
+            }
+
+            // Add keyboard support - Escape to reset
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    resetQuickFilters();
+                }
+            });
+
+            // Add event listeners for date inputs
+            const dateFilter = document.getElementById('date-filter');
+            if (dateFilter) {
+                dateFilter.addEventListener('change', applyDateFilter);
+            }
+
+            const monthFilter = document.getElementById('month-filter');
+            if (monthFilter) {
+                monthFilter.addEventListener('change', applyMonthFilter);
+            }
+        });
+
+
+        // Add this function to update the filter count badge
+        function updateFilterCount() {
+            const table = document.getElementById('documents-table-body');
+            if (!table) return;
+
+            const rows = table.getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                if (rows[i].style.display !== 'none' && rows[i].id !== 'no-results-row') {
+                    visibleCount++;
+                }
+            }
+
+            const totalRows = rows.length - (document.getElementById('no-results-row') ? 1 : 0);
+
+            const countBadge = document.getElementById('filter-count');
+            if (countBadge) {
+                if (visibleCount < totalRows) {
+                    countBadge.style.display = 'inline-block';
+                    countBadge.textContent = `${visibleCount} of ${totalRows} results`;
+                } else {
+                    countBadge.style.display = 'none';
+                }
+            }
+        }
+
+        // Call this in each filter function after updating rows
+        // Add to filterTableByStatus, filterTableByLeaveType, etc.
+
+
+
+
+    </script>
+
+    <!-- Your custom Socket.IO script -->
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

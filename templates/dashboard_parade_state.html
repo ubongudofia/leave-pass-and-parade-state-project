@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parade State Dashboard </title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/2.5.0/remixicon.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        .table-header-row-items {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f5f3e3;
+            padding: 1rem;
+            font-weight: 500;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="dashboard-wrapper">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% include "sidebar.html" %}
+
+        <!-- Main Content -->
+        <div class="main-area">
+
+            {% include "base.html" %}
+
+
+            <div class="content-boxes">
+                <!-- Welcome Banner -->
+                <div class="banner">
+                    <div class="banner-content">
+                        <h1 class="general-header-text">Welcome, {{ user.roles|join(', ') }}</h1>
+
+                        <p class="general-small-text">
+                            {% if is_doa_rsm %}
+                            You have <strong>{{ total_count }}</strong> approved parade state{{ 's' if total_count != 1
+                            else '' }} across all directorates.
+                            {% else %}
+                            You have <strong>{{ pending_count }}</strong> pending document{{ 's' if pending_count != 1
+                            else '' }}.
+                            {% endif %}
+                        </p>
+
+                        <!-- ADMIN: CAN GENERATE -->
+                        {% if "Admin Officer" in user.roles %}
+                        <a class="check-now-btn"
+                            href="{{ url_for('parade_state.update_parade_state', batch=on_batch) }}">
+
+                            Generate Parade State for - {{ today }}
+
+                            {% if on_batch == "ALL" %}
+                            (All Staff - Friday)
+                            {% else %}
+                            (Batch {{ on_batch }} ON)
+                            {% endif %}
+                        </a>
+                        {% endif %}
+                        <br><br>
+                        <!-- EVERYONE (INCLUDING ADMIN): CAN VIEW -->
+                        {% if latest_parade %}
+                        <a class="check-now-btn"
+                            href="{{ url_for('parade_state.view_parade_state', parade_id=latest_parade._id) }}">
+                            {% if is_doa_rsm %}
+                            View Latest Approved Parade State
+                            {% else %}
+                            View Today's Parade State
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <br><br>
+                        <p>No Parade State available today</p>
+                        {% endif %}
+
+                    </div>
+                    <div class="banner-image">
+                        <img style="width: 200px;" src="{{ url_for('static', filename='images/dsa-logo.png') }}"
+                            alt="Professional in suit">
+                    </div>
+                </div>
+
+                <div class="dashboard-content">
+
+                    <!-- ==================== DOA-RSM STATISTICS SECTION ==================== -->
+                    {% if is_doa_rsm and directorate_stats %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header" style="background: #e9ecef; padding: 15px;">
+                                    <h5 class="mb-0"><i class="ri-bar-chart-grouped-line"></i> Directorate Statistics
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for stat in directorate_stats %}
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100" style="border-left: 4px solid #28a745;">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-primary">{{ stat.directorate }}</h6>
+                                                    <h3 class="card-text">{{ stat.count }}</h3>
+                                                    <small class="text-muted">
+                                                        Latest: {{ stat.latest_date }} (Batch {{ stat.latest_batch }})
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- ==================== END DOA-RSM STATISTICS ==================== -->
+
+                    <!-- ==================== ENHANCED FILTER SECTION FOR ALL ROLES ==================== -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header" style="background: #e9ecef; padding: 15px;">
+                                    <h5 class="mb-0"><i class="ri-filter-3-line"></i> Filter Parade States</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="GET" action="{{ url_for('parade_state.dashboard_parade_state') }}"
+                                        class="row g-3">
+                                        <!-- Directorate filter - only for DOA-RSM -->
+                                        {% if is_doa_rsm %}
+                                        <div class="col-md-3">
+                                            <label for="directorate" class="form-label">Directorate</label>
+                                            <select name="directorate" id="directorate" class="form-select">
+                                                <option value="">All Directorates</option>
+                                                {% for dir in all_directorates %}
+                                                <option value="{{ dir }}" {% if filter_directorate==dir %}selected{%
+                                                    endif %}>
+                                                    {{ dir }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Status filter - for non-DOA roles -->
+                                        {% if not is_doa_rsm %}
+                                        <div class="col-md-3">
+                                            <label for="status" class="form-label">Status</label>
+                                            <select name="status" id="status" class="form-select">
+                                                <option value="">All Status</option>
+                                                <option value="pending" {% if filter_status=='pending' %}selected{%
+                                                    endif %}>Pending</option>
+                                                <option value="approved" {% if filter_status=='approved' %}selected{%
+                                                    endif %}>Approved</option>
+                                                <option value="rejected" {% if filter_status=='rejected' %}selected{%
+                                                    endif %}>Rejected</option>
+                                            </select>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Batch filter - for non-DOA roles -->
+                                        {% if not is_doa_rsm %}
+                                        <div class="col-md-3">
+                                            <label for="batch" class="form-label">Batch</label>
+                                            <select name="batch" id="batch" class="form-select">
+                                                <option value="">All Batches</option>
+                                                <option value="A" {% if filter_batch=='A' %}selected{% endif %}>Batch A
+                                                </option>
+                                                <option value="B" {% if filter_batch=='B' %}selected{% endif %}>Batch B
+                                                </option>
+                                            </select>
+                                        </div>
+                                        {% endif %}
+
+                                        <!-- Date From filter - for all roles -->
+                                        <div class="col-md-3">
+                                            <label for="date_from" class="form-label">Date From</label>
+                                            <input type="date" class="form-control" id="date_from" name="date_from"
+                                                value="{{ filter_date_from }}">
+                                        </div>
+
+                                        <!-- Date To filter - for all roles -->
+                                        <div class="col-md-3">
+                                            <label for="date_to" class="form-label">Date To</label>
+                                            <input type="date" class="form-control" id="date_to" name="date_to"
+                                                value="{{ filter_date_to }}">
+                                        </div>
+
+                                        <!-- Action buttons -->
+                                        <div class="col-md-3 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-primary me-2">
+                                                <i class="ri-filter-line"></i> Apply Filters
+                                            </button>
+                                            <a href="{{ url_for('parade_state.dashboard_parade_state') }}"
+                                                class="btn btn-secondary">
+                                                <i class="ri-close-line"></i> Clear
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- ==================== END FILTER SECTION ==================== -->
+
+                    <!-- Status Cards -->
+                    <div class="status-cards">
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Total Submitted</div>
+                                <div class="status-count">{{ total_count }}</div>
+                            </div>
+                            <div class="status-icon orange">
+                                <i class="ri-file-copy-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Approved</div>
+                                <div class="status-count">{{ approved_count }}</div>
+                            </div>
+                            <div class="status-icon blue">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Rejected</div>
+                                <div class="status-count">{{ rejected_count }}</div>
+                            </div>
+                            <div class="status-icon amber">
+                                <i class="ri-close-circle-line"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-card">
+                            <div class="status-info">
+                                <div class="status-title">Pending</div>
+                                <div class="status-count">{{ pending_count }}</div>
+                            </div>
+                            <div class="status-icon purple">
+                                <i class="ri-time-line"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents Table -->
+                    <div class="documents-table-container">
+                        <div class="table-container">
+                            <div class="table-header-row-items">
+                                <div class="table-header">
+                                    <h4>SUBMITTED PARADE STATES</h4>
+                                </div>
+
+                                <div class="filter-table">
+                                    <div class="filter-group">
+                                        <label for="status-filter">Quick Filter:</label>
+                                        <select id="status-filter" class="form-select form-select-sm"
+                                            onchange="applyFilter()">
+                                            <option value="">All</option>
+                                            <option value="status-approved">Approved</option>
+                                            <option value="status-rejected">Rejected</option>
+                                            <option value="status-pending">Pending</option>
+                                            <option value="batch-A">Batch A</option>
+                                            <option value="batch-B">Batch B</option>
+                                            <option value="date-picker">Date</option>
+                                            <option value="month-picker">Month</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Date picker (hidden by default) -->
+                                    <div id="date-picker-container" style="display: none; margin-left: 10px;">
+                                        <input type="date" id="date-filter" class="form-control form-control-sm"
+                                            onchange="applyDateFilter()">
+                                    </div>
+
+                                    <!-- Month picker (hidden by default) -->
+                                    <div id="month-picker-container" style="display: none; margin-left: 10px;">
+                                        <input type="month" id="month-filter" class="form-control form-control-sm"
+                                            onchange="applyMonthFilter()">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="documents-table">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" class="checkbox-all" /></th>
+                                            {% if is_doa_rsm %}
+                                            <th>
+                                                <p style="text-align: center;">Directorate</p>
+                                            </th>
+                                            {% endif %}
+                                            <th>
+                                                <p style="text-align: center;">Batch</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Date</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Status</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Strength</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">On Parade</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Sick</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Leave</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Pass</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Course</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Hosp Admin</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Absent</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Awol</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Excuse Duty</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Study Leave</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">CDS</p>
+                                            </th>
+                                            <th>
+                                                <p style="text-align: center;">Actions</p>
+                                            </th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody id="documents-table-body">
+                                        {% for parade in parade_list %}
+                                        <tr>
+                                            <td><input type="checkbox" class="checkbox-row" /></td>
+                                            {% if is_doa_rsm %}
+                                            <td>{{ parade.directorate }}</td>
+                                            {% endif %}
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.batch }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.date }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">
+                                                <div class="status-container">
+                                                    {% if parade.approval.status == "approved" %}
+                                                    <div class="status-pill issued">
+                                                        <div class="status-dot"></div>
+                                                        <span>Approved</span>
+                                                    </div>
+
+                                                    {% elif parade.approval.status == "rejected" %}
+                                                    <div class="status-pill rejected">
+                                                        <div class="status-dot"></div>
+                                                        <span>Rejected</span>
+                                                    </div>
+
+                                                    {% else %}
+                                                    <div class="status-pill pending">
+                                                        <div class="status-dot"></div>
+                                                        <span>Pending</span>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                </p>
+                                            </td>
+
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.strength }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.on_parade }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.sick }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.leave }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.pass }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.course }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.hospital }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.absent }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.awol }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.excuse_duty }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.study_leave }}</p>
+                                            </td>
+                                            <td>
+                                                <p style="text-align: center;">{{ parade.cds }}</p>
+                                            </td>
+                                            <td class="action-cell">
+                                                <div class="action-menu">
+                                                    <button class="menu-btn" onclick="toggleParadeMenu(event, this)">
+                                                        <i class="ri-more-2-line"></i>
+                                                    </button>
+
+                                                    <div class="floating-menu">
+                                                        <a
+                                                            href="{{ url_for('parade_state.view_parade_state', parade_id=parade._id) }}">
+                                                            View Parade State
+                                                        </a>
+
+                                                        {% if "Admin Officer" in user.roles and
+                                                        parade.approval.status == "pending" and
+                                                        parade.approval.current_stage == "civilian_officer" and
+                                                        parade.createdBy == user.service_number %}
+                                                        <a
+                                                            href="{{ url_for('parade_state.edit_parade_state', parade_id=parade._id) }}">
+                                                            Edit Parade State
+                                                        </a>
+                                                        {% endif %}
+
+                                                        {% if is_doa_rsm and parade.approval.current_stage ==
+                                                        "documentation" and parade.approval.doa_rsm.status !=
+                                                        "acknowledged" %}
+                                                        <a href="#"
+                                                            onclick="event.preventDefault(); document.getElementById('doa-form-{{ parade._id }}').submit();">
+                                                            Acknowledge
+                                                        </a>
+                                                        <form id="doa-form-{{ parade._id }}"
+                                                            action="{{ url_for('parade_state.doa_rsm', parade_id=parade._id) }}"
+                                                            method="POST" style="display: none;"></form>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% if parade_list|length == 0 %}
+                                <div class="no-data">
+                                    <p>No Parade State at the moment.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+        </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js"></script>
+
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+
+    <script id="current-user-data" type="application/json">
+        {{ user | tojson }}
+    </script>
+
+    <script>
+        const CURRENT_USER = JSON.parse(
+            document.getElementById("current-user-data").textContent
+        );
+        window.CURRENT_USER = CURRENT_USER;
+    </script>
+
+    <script id="config-data" type="application/json">
+        {{ {
+            'is_doa_rsm': is_doa_rsm,
+            'filter_status': filter_status,
+            'filter_batch': filter_batch,
+            'filter_date_from': filter_date_from,
+            'filter_date_to': filter_date_to
+        } | tojson }}
+    </script>
+
+    <script>
+        const config = JSON.parse(document.getElementById('config-data').textContent);
+        const HAS_DIRECTORATE_COLUMN = config.is_doa_rsm;
+        const BATCH_COLUMN = HAS_DIRECTORATE_COLUMN ? 2 : 1;  // 0-based index
+        const DATE_COLUMN = HAS_DIRECTORATE_COLUMN ? 3 : 2;   // 0-based index
+
+        // Apply filter from dropdown
+        function applyFilter() {
+            const select = document.getElementById('status-filter');
+            const value = select.value;
+
+            // Hide both pickers initially
+            document.getElementById('date-picker-container').style.display = 'none';
+            document.getElementById('month-picker-container').style.display = 'none';
+
+            if (value === 'date-picker') {
+                document.getElementById('date-picker-container').style.display = 'block';
+                return;
+            }
+            if (value === 'month-picker') {
+                document.getElementById('month-picker-container').style.display = 'block';
+                return;
+            }
+            if (value === '') {
+                resetFilters();
+                return;
+            }
+            if (value.startsWith('status-')) {
+                const status = value.replace('status-', '');
+                filterTableByStatus(status);
+                return;
+            }
+            if (value.startsWith('batch-')) {
+                const batch = value.replace('batch-', '');
+                filterTableByBatch(batch);
+                return;
+            }
+        }
+
+        // Client-side filtering by status
+        function filterTableByStatus(status) {
+            const rows = document.querySelectorAll('#documents-table-body tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const statusCell = row.querySelector('.status-pill span');
+                if (statusCell) {
+                    const rowStatus = statusCell.textContent.toLowerCase().trim();
+                    if (rowStatus === status.toLowerCase()) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            toggleNoDataMessage(visibleCount);
+        }
+
+        // Client-side filtering by batch
+        function filterTableByBatch(batch) {
+            const rows = document.querySelectorAll('#documents-table-body tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const batchCell = row.cells[BATCH_COLUMN];
+                if (batchCell) {
+                    const rowBatch = batchCell.textContent.trim();
+                    if (rowBatch === batch) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            toggleNoDataMessage(visibleCount);
+        }
+
+        // Date filter (single day)
+        function applyDateFilter() {
+            const dateValue = document.getElementById('date-filter').value;
+            if (dateValue) {
+                filterTableByDate(dateValue);
+            }
+        }
+
+        function filterTableByDate(date) {
+            const rows = document.querySelectorAll('#documents-table-body tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const dateCell = row.cells[DATE_COLUMN];
+                if (dateCell) {
+                    const rowDate = dateCell.textContent.trim();
+                    if (rowDate === date) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            toggleNoDataMessage(visibleCount);
+        }
+
+        // Month filter
+        function applyMonthFilter() {
+            const monthValue = document.getElementById('month-filter').value;
+            if (monthValue) {
+                filterTableByMonth(monthValue);
+            }
+        }
+
+        function filterTableByMonth(month) {
+            const rows = document.querySelectorAll('#documents-table-body tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const dateCell = row.cells[DATE_COLUMN];
+                if (dateCell) {
+                    const rowDate = dateCell.textContent.trim();
+                    // Assuming date format is YYYY-MM-DD
+                    const rowMonth = rowDate.substring(0, 7); // YYYY-MM
+                    if (rowMonth === month) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+
+            toggleNoDataMessage(visibleCount);
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            document.querySelectorAll('#documents-table-body tr')
+                .forEach(row => row.style.display = '');
+
+            const noDataDiv = document.querySelector('.no-data');
+            if (noDataDiv) noDataDiv.style.display = 'none';
+
+            // Reset UI controls
+            document.getElementById('status-filter').value = '';
+            document.getElementById('date-picker-container').style.display = 'none';
+            document.getElementById('month-picker-container').style.display = 'none';
+
+            const dateInput = document.getElementById('date-filter');
+            const monthInput = document.getElementById('month-filter');
+            if (dateInput) dateInput.value = '';
+            if (monthInput) monthInput.value = '';
+        }
+
+        // Toggle no data message
+        function toggleNoDataMessage(visibleCount) {
+            let noDataDiv = document.querySelector('.no-data');
+
+            if (visibleCount === 0) {
+                if (!noDataDiv) {
+                    noDataDiv = document.createElement('div');
+                    noDataDiv.className = 'no-data';
+                    noDataDiv.innerHTML = '<p>No parade states match the selected filter</p>';
+                    document.querySelector('.table-responsive')?.appendChild(noDataDiv);
+                }
+                noDataDiv.style.display = 'block';
+            } else if (noDataDiv) {
+                noDataDiv.style.display = 'none';
+            }
+        }
+
+
+        
+
+        // Menu handling
+        function toggleParadeMenu(event, button) {
+            event.stopPropagation();
+
+            const menu = button.nextElementSibling;
+            if (!menu) return;
+
+            // Hide others
+            document.querySelectorAll('.floating-menu').forEach(m => {
+                if (m !== menu) {
+                    m.style.display = 'none';
+                }
+            });
+
+            // Toggle current
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('.menu-btn') && !event.target.closest('.floating-menu')) {
+                document.querySelectorAll('.floating-menu').forEach(m => {
+                    m.style.display = 'none';
+                });
+            }
+        });
+
+        // Close menus on escape key
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.floating-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        // Close menus on scroll
+        window.addEventListener('scroll', function () {
+            document.querySelectorAll('.floating-menu').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }, { passive: true });
+
+        // Add reset button on load
+        document.addEventListener('DOMContentLoaded', function () {
+            const filterGroup = document.querySelector('.filter-group');
+            if (filterGroup && !document.getElementById('reset-filter-btn')) {
+                const resetBtn = document.createElement('button');
+                resetBtn.id = 'reset-filter-btn';
+                resetBtn.className = 'btn btn-sm btn-secondary ms-2';
+                resetBtn.innerHTML = '<i class="ri-refresh-line"></i> Reset';
+                resetBtn.onclick = resetFilters;
+                filterGroup.appendChild(resetBtn);
+            }
+        });
+    </script>
+
+    <!-- Your custom Socket.IO script -->
+    <script src="{{ url_for('static', filename='socket.js') }}"></script>
+    <!-- Your parade socket script -->
+    <!-- <script src="{{ url_for('static', filename='parade_socket.js') }}"></script> -->
+    <script defer src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+
+</html>

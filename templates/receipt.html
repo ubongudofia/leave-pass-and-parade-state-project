@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approval Receipt - {{ app.applicantName }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            padding: 20px;
+        }
+
+        .receipt-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            border-top: 5px solid #2c3e50;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .receipt-number {
+            color: #e74c3c;
+            font-size: 18px;
+            font-weight: bold;
+            background: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 8px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: #212529;
+            font-size: 15px;
+        }
+
+        .approval-chain {
+            margin-top: 10px;
+        }
+
+        .chain-step {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .chain-step:last-child {
+            border-bottom: none;
+        }
+
+        .chain-step.approved {
+            background-color: #e8f5e9;
+        }
+
+        .chain-role {
+            font-weight: 600;
+            width: 200px;
+            color: #2c3e50;
+        }
+
+        .chain-details {
+            flex: 1;
+        }
+
+        .chain-name {
+            font-weight: 500;
+        }
+
+        .chain-status {
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .chain-status.approved {
+            color: #28a745;
+        }
+
+        .chain-status.forwarded {
+            color: #17a2b8;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-print {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-download {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .btn-close {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .receipt-container {
+                box-shadow: none;
+            }
+
+            .action-buttons {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <h1>APPROVAL RECEIPT</h1>
+            <p>Directorate of Space Administration</p>
+            <div class="receipt-number">
+                Receipt No: {{ app.finalApproval.receipt.receiptNumber }}
+                <span class="status-badge status-approved">APPROVED</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Application Details</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">Application ID</div>
+                    <div class="detail-value">{{ app._id }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Applicant Name</div>
+                    <div class="detail-value">{{ app.applicantName }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Service Number</div>
+                    <div class="detail-value">{{ app.applicantId }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Application Type</div>
+                    <div class="detail-value">{{ app.type|title }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Directorate</div>
+                    <div class="detail-value">{{ app.directorate }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Period</div>
+                    <div class="detail-value">
+                        {{ app.details.startDate.strftime('%d-%b-%Y') }} to
+                        {{ app.details.endDate.strftime('%d-%b-%Y') }}
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Number of Days</div>
+                    <div class="detail-value">{{ app.details.numberOfDays }} days</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Reason</div>
+                    <div class="detail-value">{{ app.details.reason }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Approval Chain</h2>
+            <div class="approval-chain">
+                {% for step in app.approvalChain %}
+                <div class="chain-step {% if step.status == 'approved' %}approved{% endif %}">
+                    <div class="chain-role">{{ step.role }}</div>
+                    <div class="chain-details">
+                        <div class="chain-name">{{ step.approverName }}</div>
+                        <div class="chain-status {% if step.status == 'approved' %}approved{% endif %}">
+                            Status:
+                            {% if step.status == 'approved' %}
+                            ✅ Approved
+                            {% elif step.status == 'rejected' %}
+                            ❌ Rejected
+                            {% else %}
+                            ⏳ Pending
+                            {% endif %}
+
+                            {% if step.get('forward_status') == 'forwarded' %}
+                            • 🚀 Forwarded
+                            {% endif %}
+
+                            {% if step.comments %}
+                            • Note: {{ step.comments }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Final Approval -->
+                <div class="chain-step approved" style="background-color: #d4edda;">
+                    <div class="chain-role" style="font-weight: bold;">FINAL APPROVAL</div>
+                    <div class="chain-details">
+                        <div class="chain-name" style="font-weight: bold;">{{ app.finalApproval.approverName }}</div>
+                        <div class="chain-status approved">
+                            ✅ FINALLY APPROVED •
+                            {{ app.finalApproval.timestamp.strftime('%d-%b-%Y %H:%M') }}
+                            {% if app.finalApproval.comments %}
+                            • {{ app.finalApproval.comments }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>This is an electronically generated receipt.</p>
+            <p>Valid only with official stamp and signature.</p>
+            <p>Generated on: {{ app.finalApproval.receipt.issuedDate.strftime('%d-%b-%Y %H:%M') }}</p>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-print" onclick="window.print()">
+                <span>🖨️</span> Print Receipt
+            </button>
+            <a href="{{ url_for('approver_dashboard.download_receipt', app_id=app._id|string) }}"
+                class="btn btn-download">
+                <span>📥</span> Download PDF
+            </a>
+            <button class="btn btn-close" onclick="window.close()">
+                <span>✕</span> Close
+            </button>
+        </div>
+    </div>
+
+
+
+    <script>
+        function emailReceiptToSelf(appId) {
+            if (confirm('Send receipt to your email?')) {
+                fetch(`/email_receipt_self/${appId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Receipt sent to your email!');
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error sending email');
+                    });
+            }
+        }
+    </script>
+</body>
+
+</html>

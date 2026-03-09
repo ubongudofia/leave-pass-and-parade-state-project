@@ -1,0 +1,422 @@
+
+
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* WELCOME PAGE CSS */
+.background-welcome {
+    background-color: #f0f7ff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container-welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.welcome-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
+}
+
+.welcome-tag {
+    color: #4a5568;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.welcome-logo {
+    margin: 1rem 0;
+}
+
+.welcome-logo img {
+    max-width: 100%;
+    height: auto;
+}
+
+.continue-btn {
+    background-color: #93c5fd;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    width: 100%;
+}
+
+.continue-btn:hover {
+    background-color: #60a5fa;
+}
+
+.welcome-footer {
+    margin-top: 4rem;
+    color: #6b7280;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+.password-input {
+    position: relative;
+}
+
+@media (max-width: 480px) {
+    .welcome-card {
+        padding: 24px;
+    }
+
+    .welcome-tag {
+        font-size: 1.5rem;
+    }
+}
+
+/* LOGIN PAGE CSS */
+
+/* LOGIN PAGE CSS */
+.container-login {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 2rem;
+}
+
+.logo-login {
+    width: 100%;
+    max-width: 150px;
+    margin: 2rem auto;
+}
+
+.logo-login img {
+    width: 100%;
+    height: auto;
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 120%;
+    max-width: 400px;
+}
+
+.login-card-apply {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* width: 1000px; */
+    margin: auto;
+}
+
+
+.login-tag {
+    color: #60a5fa;
+    font-size: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+label {
+    display: block;
+    color: #4a5568;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    font-weight: 800;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+
+}
+
+.upload-area {
+    background: #eaf3ff;
+    border: 2px dashed #007bff;
+    text-align: center;
+    padding: 2rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+}
+
+.upload-area p {
+    color: #007bff;
+}
+
+.file-box {
+    background: #f9f9f9;
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.file-box button {
+    border: none;
+    background: none;
+    color: #c0392b;
+    cursor: pointer;
+}
+
+button.submit {
+    background: #007bff;
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+input:focus {
+    outline: none;
+    border-color: #93c5fd;
+}
+
+.password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #718096;
+    cursor: pointer;
+    padding: 0;
+}
+
+.password-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.forgot-password {
+    color: #d89f1b;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #93c5fd;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+}
+
+.login-btn:hover {
+    background-color: #60a5fa;
+}
+
+.signup-prompt {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: #4a5568;
+}
+
+.signup-link {
+    color: #d89f1b;
+    text-decoration: none;
+    font-weight: 800;
+}
+
+.login-footer {
+    margin-top: auto;
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .login-card {
+        padding: 1.5rem;
+    }
+
+    .login-card-apply {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .logo {
+        margin: 1rem auto;
+    }
+}
+
+
+@media (max-width: 968px) {
+    .login-card-apply {
+        max-width: 700px;
+    }
+}
+
+@media (max-width: 765px) {
+    .login-card-apply {
+        max-width: 500px;
+    }
+}
+
+
+/* FLASH MESSAGES CSS */
+.flash {
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    position: relative;
+    top: 50%;
+    left: 38%;
+    width: 400px;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    font-weight: 700;
+
+}
+
+.flash.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash.error {
+    background-color: #f8d7da;
+    color: #ec1a2f;
+}
+
+.flash.warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.flash.info {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+
+/* Main layout container */
+.dashboard-wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar – make it fixed/sticky */
+.sidebar {
+    width: 260px;             
+    flex-shrink: 0;
+    background: white;
+    border-right: 1px solid #e5e7eb;
+    position: fixed;          
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+/* Main area – must offset the sidebar width */
+.main-area {
+    flex: 1;
+    margin-left: 260px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Header (from base.html) */
+.header {
+    position: fixed;
+    top: 0;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    z-index: 90;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Content wrapper – starts below header */
+.content-wrapper {
+    flex: 1;
+    padding: 24px;
+    background: #f9fafb;
+}
+
+/* Optional: make sure content doesn't get hidden under header */
+.dashboard-content {
+    padding-top: 16px;   /* extra breathing room */
+}
+
+.applicant-details {
+    text-align: start;
+}
+
+
+.conditional-field {
+    display: none;
+}

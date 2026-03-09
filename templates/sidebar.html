@@ -1,0 +1,116 @@
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <div class="logo-img">
+                <img src="{{ url_for('static', filename='images/dsa-logo.png') }}" alt="Logo" />
+            </div>
+            <div class="logo-text">
+                <div class="logo-text-red">Directorate of</div>
+                <div class="logo-text-blue">Communications</div>
+                <div class="logo-text-blue">Satellite</div>
+            </div>
+        </div>
+    </div>
+
+{% set permissions = session.get('user', {}).get('permissions', {}) %}
+{% set current_endpoint = request.endpoint %}
+
+<div class="sidebar-content">
+
+    {% if permissions.get('leave_pass') %}
+    <div class="sidebar-item 
+        {% if current_endpoint in [
+            'approver_dashboard.dashboard_main',
+            'approver_dashboard.view_application'
+        ] %}active{% endif %}" 
+        data-page="{{ url_for('approver_dashboard.dashboard_main') }}">
+        <span>Leave and Pass</span>
+    </div>
+    {% endif %}
+
+    {% if permissions.get('parade_state') %}
+    <div class="sidebar-item 
+        {% if current_endpoint in [
+            'parade_state.dashboard_parade_state',
+            'parade_state.view_parade_state'
+        ] %}active{% endif %}" 
+        data-page="{{ url_for('parade_state.dashboard_parade_state') }}">
+        <span>Parade State</span>
+    </div>
+    {% endif %}
+
+</div>
+
+    <!-- COMMON MENUS -->
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-group-label">MANAGE</div>
+    <div class="sidebar-item">
+        <i data-lucide="bell-dot" style="padding-right: 5px;"></i>
+        <span id="notificationCount">Notification</span>
+    </div>
+    <div class="sidebar-item">
+        <i data-lucide="message-circle-question" style="padding-right: 5px;"></i>
+        <span>Support</span>
+    </div>
+    <div class="sidebar-item">
+        <i data-lucide="settings" style="padding-right: 5px;"></i>
+        <span>Settings</span>
+    </div>
+    <div class="sidebar-divider"></div>
+    <form id="logout-form" action="{{ url_for('auth.logout') }}" method="POST" style="display: none;"></form>
+    <div class="sidebar-item" id="logout-btn" style="cursor: pointer;">
+    <i data-lucide="log-out" style="padding-right: 5px;"></i>
+    <span>Logout</span>
+</div>
+</div>
+
+<script src="{{ url_for('static', filename='main.js') }}"></script>
+<script>
+document.querySelectorAll(".sidebar-item:not(#logout-btn)").forEach(item => {
+    item.addEventListener("click", () => {
+        const page = item.getAttribute("data-page");
+        if (page) {
+            window.location.href = page;
+        }
+    });
+});
+
+// Optional: Add this to highlight the correct item based on URL path
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    
+    // Remove active class from all items
+    sidebarItems.forEach(item => item.classList.remove('active'));
+    
+    // Add active class based on path
+    if (currentPath.includes('/view/') || currentPath.includes('/dashboard_main')) {
+        document.querySelector('[data-page*="dashboard_main"]')?.classList.add('active');
+    } else if (currentPath.includes('/view_parade_state/') || currentPath.includes('/dashboard_parade_state')) {
+        document.querySelector('[data-page*="dashboard_parade_state"]')?.classList.add('active');
+    }
+});
+
+
+
+// logout:
+// document.getElementById('logout-btn')?.addEventListener('click', function(e) {
+//     e.preventDefault();
+    
+//     if (confirm('Are you sure you want to logout?')) {
+//         // Create a form dynamically and submit it
+//         const form = document.createElement('form');
+//         form.method = 'POST';
+//         form.action = "{{ url_for('auth.logout') }}";
+//         document.body.appendChild(form);
+//         form.submit();
+//     }
+// });
+
+// Handle logout - no confirmation
+document.getElementById('logout-btn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('logout-form').submit();
+});
+</script>
