@@ -35,7 +35,8 @@ app.jinja_env.globals.update(
 
 
 # MONGO DB CONNECTION
-client = MongoClient(app.config['MONGO_URI'])
+# client = MongoClient(app.config['MONGO_URI'])
+client = MongoClient(os.environ["MONGO_URI"])
 db = client['dsa_pass_leave']
 
 
