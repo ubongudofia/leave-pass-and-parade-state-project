@@ -18,7 +18,14 @@ def reset_yearly_balances(year: int = None):
     all_staff = staff_collection.find({})
     
     for staff in all_staff:
-        service_number = staff.get('_id') or staff.get('serviceNumber')
+        service_number = (
+            staff.get('serviceNumber') or
+            staff.get('service_number')
+        )
+        
+        if not service_number:
+            service_number = str(staff.get('_id'))
+        
         if not service_number:
             continue
         

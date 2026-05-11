@@ -136,7 +136,7 @@ function showPendingApprovalModal(data) {
         if (data._id) {
             window.location.href = `/view/${data._id}`;
         } else {
-            window.location.href = "/approver_dashboard/dashboard_main";
+            window.location.href = "/dashboard_main";
         }
     });
 

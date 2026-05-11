@@ -227,10 +227,13 @@ def create_leave_balances_collection():
         
         for staff in staff_list:
             # CORRECTED: Get service number from _id field
-            service_number = staff.get('_id')
+            service_number = (
+                staff.get('serviceNumber') or 
+                staff.get('service_number')
+            )
+            # Fallback to _id only if necessary
             if not service_number:
-                # Try alternative field names
-                service_number = staff.get('serviceNumber') or staff.get('service_number')
+                service_number = str(staff.get('_id'))
             
             if not service_number:
                 print(f"  ⚠️  Skipping staff without identifier: {staff.get('fullName', 'Unknown')}")
@@ -397,7 +400,7 @@ def create_balance_for_specific_staff():
             "serviceNumber": "NA/12345",  # Musa Ahmed (Maj Gen - military)
             "fullName": "Musa Ahmed",
             "directorate": "DCS",
-            "grade": 15,  # High grade for military general
+            "grade": 15,  
             "annualRemaining": 30,
             "compassionateUsed": 0,
             "casualCalendarDays": 0,
@@ -483,7 +486,7 @@ if __name__ == "__main__":
         print('   db.staff.aggregate([')
         print('     {$lookup: {')
         print('       from: "leave_balances",')
-        print('       localField: "_id",')
+        print('       localField: "service_number",')
         print('       foreignField: "serviceNumber",')
         print('       as: "leaveInfo"')
         print('     }}')

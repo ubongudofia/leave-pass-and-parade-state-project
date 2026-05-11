@@ -3,6 +3,7 @@ from pymongo import MongoClient
 from config import Config
 from gridfs import GridFS
 from app.extensions import socketio
+
 # BLUEPRINT
 from app.routes.verify_service_number import verify_service_number_routes
 from app.routes.welcome import welcome_routes
